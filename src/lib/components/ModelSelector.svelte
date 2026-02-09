@@ -65,7 +65,29 @@
 			role="listbox"
 			aria-label="Available models"
 		>
-			{#each models as model}
+		{#each models as model}
+			{#if model.comingSoon}
+				<div
+					class="w-full flex items-start gap-3 px-4 py-3 text-left opacity-40 cursor-not-allowed pointer-events-none"
+					role="option"
+					aria-selected={false}
+					aria-disabled="true"
+				>
+					<div class="flex-1 min-w-0">
+						<div class="flex items-center gap-2">
+							<span class="text-sm font-medium text-gray-400">{model.name}</span>
+							{#if model.badge}
+								<span
+									class="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-gray-500/20 text-gray-400"
+								>
+									{model.badge}
+								</span>
+							{/if}
+						</div>
+						<p class="text-xs text-gray-600 mt-0.5">{model.description}</p>
+					</div>
+				</div>
+			{:else}
 				<button
 					onclick={() => handleSelect(model)}
 					class="w-full flex items-start gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left {selected.id === model.id ? 'bg-white/5' : ''}"
@@ -101,7 +123,8 @@
 						</svg>
 					{/if}
 				</button>
-			{/each}
+			{/if}
+		{/each}
 		</div>
 	{/if}
 </div>

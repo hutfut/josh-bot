@@ -10,4 +10,5 @@ export interface Model {
 	name: string;
 	description: string;
 	badge?: string;
+	comingSoon?: boolean;
 }
