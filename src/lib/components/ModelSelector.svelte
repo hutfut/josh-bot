@@ -24,14 +24,23 @@
 			isOpen = false;
 		}
 	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape' && isOpen) {
+			isOpen = false;
+		}
+	}
 </script>
 
-<svelte:window onclick={handleClickOutside} />
+<svelte:window onclick={handleClickOutside} onkeydown={handleKeydown} />
 
 <div class="model-selector relative">
 	<button
 		onclick={() => (isOpen = !isOpen)}
 		class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors text-sm font-medium"
+		aria-haspopup="listbox"
+		aria-expanded={isOpen}
+		aria-label="Select model: {selected.name}"
 	>
 		<span class="text-white">{selected.name}</span>
 		<svg
@@ -40,6 +49,7 @@
 			xmlns="http://www.w3.org/2000/svg"
 			viewBox="0 0 20 20"
 			fill="currentColor"
+			aria-hidden="true"
 		>
 			<path
 				fill-rule="evenodd"
@@ -51,12 +61,16 @@
 
 	{#if isOpen}
 		<div
-			class="absolute top-full left-0 mt-2 w-72 bg-surface-100/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-xl shadow-black/50 animate-fade-in z-50"
+			class="absolute top-full left-0 mt-2 w-72 border border-white/10 rounded-xl overflow-hidden shadow-xl shadow-black/50 animate-fade-in z-50 model-dropdown"
+			role="listbox"
+			aria-label="Available models"
 		>
 			{#each models as model}
 				<button
 					onclick={() => handleSelect(model)}
 					class="w-full flex items-start gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left {selected.id === model.id ? 'bg-white/5' : ''}"
+					role="option"
+					aria-selected={selected.id === model.id}
 				>
 					<div class="flex-1 min-w-0">
 						<div class="flex items-center gap-2">
@@ -77,6 +91,7 @@
 							xmlns="http://www.w3.org/2000/svg"
 							viewBox="0 0 20 20"
 							fill="currentColor"
+							aria-hidden="true"
 						>
 							<path
 								fill-rule="evenodd"
@@ -90,3 +105,11 @@
 		</div>
 	{/if}
 </div>
+
+<style>
+	.model-dropdown {
+		background-color: rgba(22, 22, 37, 0.95);
+		-webkit-backdrop-filter: blur(24px);
+		backdrop-filter: blur(24px);
+	}
+</style>

@@ -11,9 +11,10 @@
 </script>
 
 {#if message.role === 'assistant'}
-	<div class="flex gap-3 animate-slide-up">
+	<div class="flex gap-3 animate-slide-up" role="article" aria-label="{modelName} response">
 		<div
 			class="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0 mt-0.5 select-none"
+			aria-hidden="true"
 		>
 			j
 		</div>
@@ -25,7 +26,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="flex justify-end animate-slide-up">
+	<div class="flex justify-end animate-slide-up" role="article" aria-label="Your message">
 		<div
 			class="max-w-[80%] px-4 py-3 rounded-2xl rounded-br-sm bg-violet-600/20 border border-violet-500/10 text-[14px] text-gray-100 leading-relaxed"
 		>

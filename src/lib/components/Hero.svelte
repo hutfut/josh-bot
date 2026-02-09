@@ -4,24 +4,34 @@
 	}
 </script>
 
-<section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+<section
+	class="relative min-h-screen min-h-dvh flex items-center justify-center overflow-hidden"
+	aria-label="Introduction"
+>
 	<!-- Background gradient orbs -->
-	<div class="absolute inset-0 overflow-hidden pointer-events-none">
+	<div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
 		<div
-			class="absolute -top-40 -right-32 w-[500px] h-[500px] bg-violet-600/20 rounded-full blur-[120px] animate-float"
+			class="absolute -top-32 -right-24 w-[400px] h-[400px] sm:w-[500px] sm:h-[500px] bg-violet-600/20 rounded-full blur-[120px] animate-float"
 		></div>
 		<div
-			class="absolute -bottom-40 -left-32 w-[450px] h-[450px] bg-cyan-600/15 rounded-full blur-[120px] animate-float"
+			class="absolute -bottom-32 -left-24 w-[350px] h-[350px] sm:w-[450px] sm:h-[450px] bg-cyan-600/15 rounded-full blur-[120px] animate-float"
 			style="animation-delay: -3s;"
 		></div>
 		<div
-			class="absolute top-1/3 left-1/2 -translate-x-1/2 w-[350px] h-[350px] bg-violet-500/10 rounded-full blur-[100px]"
+			class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[250px] h-[250px] sm:w-[350px] sm:h-[350px] bg-violet-500/10 rounded-full blur-[100px]"
+		></div>
+		<!-- Subtle secondary orb for depth -->
+		<div
+			class="absolute bottom-1/4 right-1/4 w-[200px] h-[200px] bg-indigo-500/[0.07] rounded-full blur-[80px] animate-float"
+			style="animation-delay: -4.5s;"
 		></div>
 		<!-- Grid overlay -->
 		<div
 			class="absolute inset-0 opacity-[0.03]"
 			style="background-image: linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 60px 60px;"
 		></div>
+		<!-- Noise texture overlay for visual depth -->
+		<div class="absolute inset-0 opacity-[0.015] mix-blend-overlay noise-texture"></div>
 	</div>
 
 	<!-- Content -->
@@ -30,12 +40,12 @@
 		<div
 			class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-white/[0.08] text-sm text-violet-300 mb-8 animate-fade-in"
 		>
-			<span class="text-violet-400">&#10022;</span>
+			<span class="text-violet-400" aria-hidden="true">&#10022;</span>
 			<span>Introducing josh-4o</span>
 		</div>
 
 		<!-- Headline -->
-		<h1 class="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6 animate-fade-in">
+		<h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 animate-fade-in">
 			<span class="gradient-text">The world's most advanced model</span>
 			<br />
 			<span class="text-white/90">for answering questions about</span>
@@ -58,15 +68,23 @@
 			style="animation-delay: 0.2s;"
 		>
 			Try josh-4o
-			<span class="text-xl">&rarr;</span>
+			<span class="text-xl" aria-hidden="true">&rarr;</span>
 		</button>
 
 		<!-- Fake testimonial -->
 		<p
-			class="mt-16 text-sm text-gray-600 animate-fade-in"
+			class="mt-16 text-sm text-gray-500 animate-fade-in"
 			style="animation-delay: 0.3s;"
 		>
-			"Finally, AI that does less." &mdash; &#9733;&#9733;&#9733;&#9733;&#9733; (1 review)
+			"Finally, AI that does less." &mdash; <span aria-label="5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> (1 review)
 		</p>
 	</div>
 </section>
+
+<style>
+	.noise-texture {
+		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+		background-repeat: repeat;
+		background-size: 256px 256px;
+	}
+</style>

@@ -13,6 +13,7 @@
 	--animate-fade-in: fade-in 0.4s ease-out;
 	--animate-slide-up: slide-up 0.3s ease-out;
 	--animate-float: float 6s ease-in-out infinite;
+	--animate-fade-in-delay: fade-in 0.4s ease-out both;
 
 	@keyframes fade-in {
 		0% {
@@ -48,12 +49,18 @@
 @layer base {
 	html {
 		scroll-behavior: smooth;
+		/* Safari smooth scroll support */
+		-webkit-overflow-scrolling: touch;
 	}
 
 	body {
 		@apply bg-surface text-gray-100 font-sans antialiased;
+		/* Firefox scrollbar styling */
+		scrollbar-width: thin;
+		scrollbar-color: #2a2a42 transparent;
 	}
 
+	/* Webkit scrollbar */
 	::-webkit-scrollbar {
 		width: 6px;
 	}
@@ -65,6 +72,12 @@
 	::-webkit-scrollbar-thumb {
 		@apply bg-surface-300 rounded-full;
 	}
+
+	/* Ensure focus outlines are visible for keyboard navigation */
+	:focus-visible {
+		outline: 2px solid #8b5cf6;
+		outline-offset: 2px;
+	}
 }
 
 @utility gradient-text {
@@ -72,10 +85,22 @@
 }
 
 @utility glass {
-	@apply bg-white/5 backdrop-blur-xl border border-white/10;
+	@apply bg-white/5 border border-white/10;
+	-webkit-backdrop-filter: blur(24px);
+	backdrop-filter: blur(24px);
 }
 
 @utility glass-hover {
-	@apply bg-white/5 backdrop-blur-xl border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-200;
+	@apply bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-200;
+	-webkit-backdrop-filter: blur(24px);
+	backdrop-filter: blur(24px);
+}
+
+/* Safari fallback for when backdrop-filter is unsupported */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+	.glass,
+	.glass-hover {
+		background-color: rgba(22, 22, 37, 0.95);
+	}
 }
 

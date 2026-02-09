@@ -139,24 +139,44 @@
 	});
 </script>
 
-<section id="chat" class="relative min-h-screen flex flex-col bg-surface">
+<section
+	id="chat"
+	class="relative flex flex-col bg-surface chat-section"
+	aria-label="Chat with josh-bot"
+>
 	<!-- Chat header -->
 	<div
-		class="sticky top-0 z-20 flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-surface/80 backdrop-blur-xl"
+		class="sticky top-0 z-20 flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-surface/80 chat-header-blur"
 	>
 		<ModelSelector {models} selected={selectedModel} onSelect={handleModelChange} />
 		<button
 			onclick={scrollToAbout}
-			class="text-sm text-gray-500 hover:text-white transition-colors duration-200"
+			class="text-sm text-gray-400 hover:text-white transition-colors duration-200"
 		>
 			About
 		</button>
 	</div>
 
 	<!-- Messages area -->
-	<div bind:this={messagesContainer} class="flex-1 overflow-y-auto px-4 py-8">
+	<div
+		bind:this={messagesContainer}
+		class="flex-1 overflow-y-auto px-4 py-8 scroll-smooth"
+		role="log"
+		aria-live="polite"
+		aria-label="Conversation messages"
+		style="-webkit-overflow-scrolling: touch;"
+	>
 		<div class="max-w-2xl mx-auto space-y-6">
-			{#each messages as message (message.id)}
+			{#each messages as message, i (message.id)}
+				{@const prevMessage = i > 0 ? messages[i - 1] : null}
+				{@const showTimestamp = prevMessage && (message.timestamp - prevMessage.timestamp > 120000)}
+				{#if showTimestamp}
+					<div class="flex justify-center py-2" aria-hidden="true">
+						<span class="text-[11px] text-gray-600 bg-surface-50/50 px-3 py-1 rounded-full">
+							{new Date(message.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+						</span>
+					</div>
+				{/if}
 				<ChatMessage {message} modelName={selectedModel.name} />
 			{/each}
 
@@ -169,7 +189,7 @@
 	<!-- Suggested prompts -->
 	{#if showPrompts && messages.length <= 1}
 		<div class="px-4 pb-3">
-			<div class="max-w-2xl mx-auto flex flex-wrap gap-2 justify-center">
+			<div class="max-w-2xl mx-auto flex flex-wrap gap-2 justify-center" role="group" aria-label="Suggested questions">
 				{#each suggestedPrompts as prompt}
 					<button
 						onclick={() => handleSend(prompt)}
@@ -183,10 +203,12 @@
 	{/if}
 
 	<!-- Input area -->
-	<div class="sticky bottom-0 px-4 pt-2 pb-4 bg-gradient-to-t from-surface from-60% to-transparent">
+	<div class="sticky bottom-0 px-4 pt-2 pb-4 bg-gradient-to-t from-surface from-60% to-transparent chat-input-area">
 		<div class="max-w-2xl mx-auto">
 			<div class="glass rounded-2xl flex items-end gap-2 p-2">
+				<label for="chat-input" class="sr-only">Ask about Josh</label>
 				<textarea
+					id="chat-input"
 					bind:this={textareaEl}
 					bind:value={inputValue}
 					onkeydown={handleKeydown}
@@ -211,13 +233,14 @@
 						stroke-width="2"
 						stroke-linecap="round"
 						stroke-linejoin="round"
+						aria-hidden="true"
 					>
 						<path d="M22 2L11 13" />
 						<path d="M22 2L15 22L11 13L2 9L22 2Z" />
 					</svg>
 				</button>
 			</div>
-			<p class="text-center text-[11px] text-gray-600 mt-3">
+			<p class="text-center text-[11px] text-gray-500 mt-3">
 				Powered by Josh&trade; &middot; Not affiliated with any real AI company &middot;
 				<a
 					href="https://github.com/hutfut/josh-bot"
@@ -231,3 +254,25 @@
 		</div>
 	</div>
 </section>
+
+<style>
+	.chat-section {
+		min-height: 100vh;
+		min-height: 100dvh;
+	}
+
+	.chat-header-blur {
+		-webkit-backdrop-filter: blur(24px);
+		backdrop-filter: blur(24px);
+	}
+
+	/* Ensure input stays visible when mobile keyboard is open */
+	.chat-input-area {
+		padding-bottom: max(1rem, env(safe-area-inset-bottom));
+	}
+
+	/* Smooth scrolling for the messages container on iOS */
+	.scroll-smooth {
+		-webkit-overflow-scrolling: touch;
+	}
+</style>
