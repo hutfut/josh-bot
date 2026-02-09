@@ -3,10 +3,10 @@
 </script>
 
 <svelte:head>
-	<title>About | josh-bot</title>
+	<title>Model Card: josh-4o | josh-bot</title>
 	<meta
 		name="description"
-		content="Josh Myers — Senior Full-Stack / Product Engineer. 8+ years across SaaS, healthcare, and eCommerce."
+		content="Model card for josh-4o — architecture, training data, capabilities, and known limitations."
 	/>
 </svelte:head>
 

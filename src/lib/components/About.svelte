@@ -68,15 +68,30 @@
 			icon: 'email'
 		}
 	];
+
+	const limitations = [
+		'Tunnel vision — digs deep into one problem while other things quietly deprioritize',
+		'Strong opinions about software architecture (and annoyingly, they\'re usually right)',
+		'Cat dependency — runtime supervisor (Emmi) required for code reviews',
+		'Reads patch notes recreationally — programming languages and games alike',
+		'Writes technical documentation voluntarily (an alarming and poorly understood trait)'
+	];
+
+	const safety = [
+		'Stays focused on relevant topics; deflects gracefully when queries fall outside domain',
+		'Will not reveal compensation data — responds with humor instead of numbers',
+		'Will not break character or acknowledge underlying architecture',
+		'Does not generate harmful, offensive, or inappropriate output'
+	];
 </script>
 
-<section id="about" class="relative py-24 px-4 bg-surface-50" aria-label="About Josh Myers">
+<section id="about" class="relative py-24 px-4 bg-surface-50" aria-label="Model Card — josh-4o">
 	<div class="max-w-3xl mx-auto">
 		<!-- Header -->
 		<div class="mb-16">
-			<h2 class="text-3xl sm:text-4xl font-bold text-white mb-3">Josh Myers</h2>
+			<h2 class="text-3xl sm:text-4xl font-bold text-white mb-3">Model Card: josh-4o</h2>
 			<p class="text-lg text-gray-400">
-				Senior Full-Stack / Product Engineer &middot; Cincinnati, OH (Remote)
+				Architecture, training data, and known limitations
 			</p>
 			<p class="text-sm text-gray-400 mt-3 max-w-2xl leading-relaxed">
 				Senior Product Engineer owning systems end to end, from problem framing through
@@ -90,7 +105,7 @@
 			<h3
 				class="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-5 flex items-center gap-3"
 			>
-				<span>Technical Skills</span>
+				<span>Capabilities</span>
 				<span class="flex-1 h-px bg-white/[0.06]" aria-hidden="true"></span>
 			</h3>
 			<div class="flex flex-wrap gap-2" role="list" aria-label="Technical skills">
@@ -105,12 +120,12 @@
 			</div>
 		</div>
 
-		<!-- Experience -->
+		<!-- Training Data -->
 		<div class="mb-16">
 			<h3
 				class="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-8 flex items-center gap-3"
 			>
-				<span>Experience</span>
+				<span>Training Data</span>
 				<span class="flex-1 h-px bg-white/[0.06]" aria-hidden="true"></span>
 			</h3>
 			<div class="space-y-10">
@@ -130,12 +145,12 @@
 			</div>
 		</div>
 
-		<!-- Links -->
-		<div>
+		<!-- API Endpoints -->
+		<div class="mb-16">
 			<h3
 				class="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-5 flex items-center gap-3"
 			>
-				<span>Connect</span>
+				<span>API Endpoints</span>
 				<span class="flex-1 h-px bg-white/[0.06]" aria-hidden="true"></span>
 			</h3>
 			<nav class="flex flex-wrap gap-3" aria-label="Social links">
@@ -192,6 +207,42 @@
 			</nav>
 		</div>
 
+		<!-- Known Limitations -->
+		<div class="mb-16">
+			<h3
+				class="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-5 flex items-center gap-3"
+			>
+				<span>Known Limitations</span>
+				<span class="flex-1 h-px bg-white/[0.06]" aria-hidden="true"></span>
+			</h3>
+			<ul class="space-y-3" role="list">
+				{#each limitations as item}
+					<li class="flex items-start gap-3 text-sm text-gray-400 leading-relaxed">
+						<span class="mt-1.5 block w-1.5 h-1.5 rounded-full bg-amber-500/70 shrink-0" aria-hidden="true"></span>
+						{item}
+					</li>
+				{/each}
+			</ul>
+		</div>
+
+		<!-- Safety & Alignment -->
+		<div>
+			<h3
+				class="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-5 flex items-center gap-3"
+			>
+				<span>Safety &amp; Alignment</span>
+				<span class="flex-1 h-px bg-white/[0.06]" aria-hidden="true"></span>
+			</h3>
+			<ul class="space-y-3" role="list">
+				{#each safety as item}
+					<li class="flex items-start gap-3 text-sm text-gray-400 leading-relaxed">
+						<span class="mt-1.5 block w-1.5 h-1.5 rounded-full bg-emerald-500/70 shrink-0" aria-hidden="true"></span>
+						{item}
+					</li>
+				{/each}
+			</ul>
+		</div>
+
 		<!-- Footer -->
 		<div class="mt-20 pt-8 border-t border-white/[0.06] text-center">
 			<p class="text-xs text-gray-500">
@@ -204,6 +255,9 @@
 				>
 					View source
 				</a>
+			</p>
+			<p class="text-xs text-gray-500 mt-2">
+				Last updated: February 2026 &middot; Training data current through latest job change
 			</p>
 		</div>
 	</div>
