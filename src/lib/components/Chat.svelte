@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { fly } from 'svelte/transition';
-	import type { ChatMessage as ChatMessageType } from '$lib/types';
+	import type { ChatMessage as ChatMessageType, ResponseSource, MessageMetadata } from '$lib/types';
 	import { models, defaultModel } from '$lib/data/models';
 	import {
 		getGreeting,
@@ -57,6 +57,32 @@
 		return picked.map((f) => f.prompt);
 	}
 
+	function generateMetadata(source: ResponseSource, responseLength: number, latencyMs: number): MessageMetadata {
+		switch (source) {
+			case 'scripted':
+				return {
+					confidence: 0.97 + Math.random() * 0.029,
+					tokens: 0,
+					latency: latencyMs
+				};
+			case 'llm-stream':
+				return {
+					confidence: 0.88 + Math.random() * 0.09,
+					tokens: Math.max(1, Math.round(responseLength / 4 + (Math.random() - 0.5) * 20)),
+					latency: latencyMs
+				};
+			case 'fallback':
+			case 'error':
+			case 'rate-limit':
+			default:
+				return {
+					confidence: 0.0,
+					tokens: 0,
+					latency: latencyMs
+				};
+		}
+	}
+
 	function setFollowUps(category?: string) {
 		if (category) {
 			visitedCategories.add(category);
@@ -68,12 +94,15 @@
 	}
 
 	function initChat() {
+		const greeting = getGreeting(selectedModel.id);
 		messages = [
 			{
 				id: crypto.randomUUID(),
 				role: 'assistant',
-				content: getGreeting(selectedModel.id),
-				timestamp: Date.now()
+				content: greeting,
+				timestamp: Date.now(),
+				source: 'scripted',
+				metadata: generateMetadata('scripted', greeting.length, Math.round(8 + Math.random() * 12))
 			}
 		];
 		showPrompts = true;
@@ -130,6 +159,8 @@
 
 		await scrollToBottom();
 
+		const requestStartTime = Date.now();
+
 		try {
 			// Build conversation history for the API (exclude the message we just added —
 			// the endpoint receives it separately as `message`)
@@ -151,14 +182,19 @@
 			if (!res.ok) {
 				const data = await res.json().catch(() => ({}));
 				isTyping = false;
-				lastResponseSource = data.source ?? 'error';
+				const source: ResponseSource = data.source ?? 'error';
+				lastResponseSource = source;
+				const content = data.response ?? 'Something went wrong. Try again.';
+				const latency = Date.now() - requestStartTime;
 				messages = [
 					...messages,
 					{
 						id: crypto.randomUUID(),
 						role: 'assistant',
-						content: data.response ?? 'Something went wrong. Try again.',
-						timestamp: Date.now()
+						content,
+						timestamp: Date.now(),
+						source,
+						metadata: generateMetadata(source, content.length, latency)
 					}
 				];
 				setFollowUps();
@@ -178,7 +214,8 @@
 								id: streamId,
 								role: 'assistant',
 								content: chunk,
-								timestamp: Date.now()
+								timestamp: Date.now(),
+								source: 'llm-stream'
 							}
 						];
 						isTyping = false;
@@ -192,29 +229,45 @@
 				}
 				if (first) {
 					isTyping = false;
+					const fallbackContent = "I had nothing to add. Try asking something else.";
+					const latency = Date.now() - requestStartTime;
 					messages = [
 						...messages,
 						{
 							id: streamId,
 							role: 'assistant',
-							content: "I had nothing to add. Try asking something else.",
-							timestamp: Date.now()
+							content: fallbackContent,
+							timestamp: Date.now(),
+							source: 'fallback',
+							metadata: generateMetadata('fallback', fallbackContent.length, latency)
 						}
 					];
+				} else {
+					// Stream complete — attach metadata to the final message
+					const latency = Date.now() - requestStartTime;
+					messages = messages.map((m) =>
+						m.id === streamId
+							? { ...m, metadata: generateMetadata('llm-stream', m.content.length, latency) }
+							: m
+					);
 				}
 				lastResponseSource = 'llm-stream';
 				setFollowUps(); // LLM response — show default follow-ups
 			} else {
 				const data = await res.json();
 				isTyping = false;
-				lastResponseSource = data.source ?? 'scripted';
+				const source: ResponseSource = data.source ?? 'scripted';
+				lastResponseSource = source;
+				const latency = Date.now() - requestStartTime;
 				messages = [
 					...messages,
 					{
 						id: crypto.randomUUID(),
 						role: 'assistant',
 						content: data.response,
-						timestamp: Date.now()
+						timestamp: Date.now(),
+						source,
+						metadata: generateMetadata(source, data.response.length, latency)
 					}
 				];
 				setFollowUps(data.category); // Scripted response — use category-specific follow-ups
@@ -222,14 +275,17 @@
 		} catch {
 			isTyping = false;
 			lastResponseSource = 'error';
+			const errorContent = "Something went wrong reaching my backend. Which is embarrassing, given this is a portfolio site. Try again — or ask Josh directly.";
+			const latency = Date.now() - requestStartTime;
 			messages = [
 				...messages,
 				{
 					id: crypto.randomUUID(),
 					role: 'assistant',
-					content:
-						"Something went wrong reaching my backend. Which is embarrassing, given this is a portfolio site. Try again — or ask Josh directly.",
-					timestamp: Date.now()
+					content: errorContent,
+					timestamp: Date.now(),
+					source: 'error',
+					metadata: generateMetadata('error', errorContent.length, latency)
 				}
 			];
 			setFollowUps();
