@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Hero from '$lib/components/Hero.svelte';
 	import Features from '$lib/components/Features.svelte';
+	import Testimonials from '$lib/components/Testimonials.svelte';
 	import Chat from '$lib/components/Chat.svelte';
 </script>
 
@@ -43,5 +44,6 @@
 <main>
 	<Hero />
 	<Features />
+	<Testimonials />
 	<Chat />
 </main>

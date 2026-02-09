@@ -86,10 +86,33 @@
 			<span class="text-xl" aria-hidden="true">&rarr;</span>
 		</button>
 
+		<!-- Social proof stats -->
+		<div
+			class="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-0 max-w-lg sm:max-w-2xl mx-auto animate-fade-in"
+			style="animation-delay: 0.25s;"
+		>
+			<div class="sm:border-r sm:border-white/[0.08] px-4">
+				<div class="text-xl font-bold text-white/80">1</div>
+				<div class="text-xs text-gray-500 mt-0.5">Active user</div>
+			</div>
+			<div class="sm:border-r sm:border-white/[0.08] px-4">
+				<div class="text-xl font-bold text-white/80">$0</div>
+				<div class="text-xs text-gray-500 mt-0.5">Venture capital</div>
+			</div>
+			<div class="sm:border-r sm:border-white/[0.08] px-4">
+				<div class="text-xl font-bold text-white/80">35+</div>
+				<div class="text-xs text-gray-500 mt-0.5">Pre-trained responses</div>
+			</div>
+			<div class="px-4">
+				<div class="text-xl font-bold text-white/80">∞</div>
+				<div class="text-xs text-gray-500 mt-0.5">Opinions</div>
+			</div>
+		</div>
+
 		<!-- Fake testimonial -->
 		<p
-			class="mt-16 text-sm text-gray-500 animate-fade-in"
-			style="animation-delay: 0.3s;"
+			class="mt-10 text-sm text-gray-500 animate-fade-in"
+			style="animation-delay: 0.35s;"
 		>
 			"Finally, AI that does less." &mdash; <span aria-label="5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> (1 review)
 		</p>
