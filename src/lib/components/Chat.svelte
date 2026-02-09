@@ -83,18 +83,71 @@
 				})
 			});
 
-			const data = await res.json();
-
-			isTyping = false;
-			messages = [
-				...messages,
-				{
-					id: crypto.randomUUID(),
-					role: 'assistant',
-					content: data.response,
-					timestamp: Date.now()
+			if (!res.ok) {
+				const data = await res.json().catch(() => ({}));
+				isTyping = false;
+				messages = [
+					...messages,
+					{
+						id: crypto.randomUUID(),
+						role: 'assistant',
+						content: data.response ?? 'Something went wrong. Try again.',
+						timestamp: Date.now()
+					}
+				];
+			} else if (res.headers.get('X-Response-Source') === 'llm-stream' && res.body) {
+				const streamId = crypto.randomUUID();
+				const reader = res.body.getReader();
+				const decoder = new TextDecoder();
+				let first = true;
+				while (true) {
+					const { done, value } = await reader.read();
+					if (done) break;
+					const chunk = decoder.decode(value, { stream: true });
+					if (first) {
+						messages = [
+							...messages,
+							{
+								id: streamId,
+								role: 'assistant',
+								content: chunk,
+								timestamp: Date.now()
+							}
+						];
+						isTyping = false;
+						first = false;
+						await scrollToBottom();
+					} else {
+						messages = messages.map((m) =>
+							m.id === streamId ? { ...m, content: m.content + chunk } : m
+						);
+					}
 				}
-			];
+				if (first) {
+					isTyping = false;
+					messages = [
+						...messages,
+						{
+							id: streamId,
+							role: 'assistant',
+							content: "I had nothing to add. Try asking something else.",
+							timestamp: Date.now()
+						}
+					];
+				}
+			} else {
+				const data = await res.json();
+				isTyping = false;
+				messages = [
+					...messages,
+					{
+						id: crypto.randomUUID(),
+						role: 'assistant',
+						content: data.response,
+						timestamp: Date.now()
+					}
+				];
+			}
 		} catch {
 			isTyping = false;
 			messages = [

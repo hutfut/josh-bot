@@ -126,19 +126,41 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 		// Ensure the current message is included as the final user message
 		const messages = [...trimmedHistory, { role: 'user' as const, content: message }];
 
-		const response = await client.messages.create({
+		const stream = await client.messages.create({
 			model: LLM_MODEL,
 			max_tokens: MAX_TOKENS,
 			system: systemPrompt,
-			messages
+			messages,
+			stream: true
 		});
 
-		const text =
-			response.content[0]?.type === 'text'
-				? response.content[0].text
-				: getRandomFallback();
+		const encoder = new TextEncoder();
+		const readable = new ReadableStream({
+			async start(controller) {
+				try {
+					for await (const event of stream) {
+						if (
+							event.type === 'content_block_delta' &&
+							event.delta?.type === 'text_delta' &&
+							typeof event.delta.text === 'string'
+						) {
+							controller.enqueue(encoder.encode(event.delta.text));
+						}
+					}
+				} catch (err) {
+					console.error('[api/chat] LLM stream error:', err);
+				} finally {
+					controller.close();
+				}
+			}
+		});
 
-		return json({ response: text, source: 'llm' });
+		return new Response(readable, {
+			headers: {
+				'Content-Type': 'text/plain; charset=utf-8',
+				'X-Response-Source': 'llm-stream'
+			}
+		});
 	} catch (err) {
 		console.error('[api/chat] LLM error:', err);
 		return json({ response: getErrorResponse(), source: 'error' });
