@@ -37,12 +37,26 @@
 	<!-- Content -->
 	<div class="relative z-10 max-w-3xl mx-auto px-6 text-center">
 		<!-- Badge -->
-		<div
-			class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-white/[0.08] text-sm text-violet-300 mb-8 animate-fade-in"
+		<a
+			href="/changelog"
+			class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.03] border border-white/[0.08] text-sm text-violet-300 mb-8 animate-fade-in hover:bg-white/[0.06] hover:border-white/[0.15] transition-all duration-200"
 		>
-			<span class="text-violet-400" aria-hidden="true">&#10022;</span>
-			<span>Introducing josh-4o</span>
-		</div>
+			<span class="w-1.5 h-1.5 rounded-full bg-emerald-400" aria-hidden="true"></span>
+			<span>What's New &mdash; v2.1.0</span>
+			<svg
+				class="w-3.5 h-3.5 text-gray-500"
+				xmlns="http://www.w3.org/2000/svg"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				aria-hidden="true"
+			>
+				<path d="m9 18 6-6-6-6" />
+			</svg>
+		</a>
 
 		<!-- Headline -->
 		<h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 animate-fade-in">

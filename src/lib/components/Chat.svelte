@@ -22,6 +22,7 @@
 	let currentFollowUps: string[] = $state([]);
 	let visitedCategories: Set<string> = $state(new Set());
 	let messagesContainer: HTMLElement;
+	let chatSection: HTMLElement;
 	let textareaEl: HTMLTextAreaElement;
 
 	/**
@@ -82,6 +83,10 @@
 
 	async function scrollToBottom() {
 		await tick();
+		// Keep the chat section in the viewport when interacting
+		if (chatSection) {
+			chatSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+		}
 		if (messagesContainer) {
 			messagesContainer.scrollTo({
 				top: messagesContainer.scrollHeight,
@@ -251,6 +256,7 @@
 </script>
 
 <section
+	bind:this={chatSection}
 	id="chat"
 	class="relative flex flex-col bg-surface chat-section"
 	aria-label="Chat with josh-bot"
@@ -384,8 +390,8 @@
 
 <style>
 	.chat-section {
-		min-height: 100vh;
-		min-height: 100dvh;
+		height: 100vh;
+		height: 100dvh;
 	}
 
 	.chat-header-blur {
