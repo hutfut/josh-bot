@@ -6,6 +6,7 @@
 
 	const navItems = [
 		{ label: 'Chat', href: '/#chat' },
+		{ label: 'Docs', href: '/docs' },
 		{ label: 'Pricing', href: '/pricing' },
 		{ label: 'About', href: '/about' },
 		{ label: 'Changelog', href: '/changelog' }
