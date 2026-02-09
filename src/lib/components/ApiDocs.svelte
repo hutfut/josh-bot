@@ -463,7 +463,7 @@ console.log(data.content);
 
 					<!-- Try it button -->
 					<a
-						href="/#chat"
+						href="/chat"
 						class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-500 transition-colors duration-200 shadow-lg shadow-violet-500/20"
 					>
 						<svg

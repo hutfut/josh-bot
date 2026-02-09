@@ -1,7 +1,4 @@
 <script lang="ts">
-	function scrollToChat() {
-		document.getElementById('chat')?.scrollIntoView({ behavior: 'smooth' });
-	}
 </script>
 
 <section
@@ -77,14 +74,14 @@
 		</p>
 
 		<!-- CTA -->
-		<button
-			onclick={scrollToChat}
+		<a
+			href="/chat"
 			class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-violet-600 to-cyan-600 rounded-full text-white font-semibold text-lg hover:from-violet-500 hover:to-cyan-500 transition-all duration-300 shadow-lg shadow-violet-600/25 hover:shadow-violet-500/40 hover:scale-[1.02] active:scale-[0.98] animate-fade-in"
 			style="animation-delay: 0.2s;"
 		>
 			Try josh-4o
 			<span class="text-xl" aria-hidden="true">&rarr;</span>
-		</button>
+		</a>
 
 		<!-- Social proof stats -->
 		<div

@@ -327,10 +327,6 @@
 		lastResponseSource !== 'scripted'
 	);
 
-	function scrollToAbout() {
-		document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
-	}
-
 	onMount(() => {
 		initChat();
 	});
@@ -339,22 +335,9 @@
 <section
 	bind:this={chatSection}
 	id="chat"
-	class="relative flex flex-col bg-surface chat-section scroll-mt-16"
+	class="relative flex flex-col bg-surface chat-section pt-16"
 	aria-label="Chat with josh-bot"
 >
-	<!-- Chat header -->
-	<div
-		class="sticky top-16 z-20 flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-surface/80 chat-header-blur"
-	>
-		<ModelSelector {models} selected={selectedModel} onSelect={handleModelChange} />
-		<button
-			onclick={scrollToAbout}
-			class="text-sm text-gray-400 hover:text-white transition-colors duration-200"
-		>
-			About
-		</button>
-	</div>
-
 	<!-- Messages area -->
 	<div
 		bind:this={messagesContainer}
@@ -365,6 +348,13 @@
 		style="-webkit-overflow-scrolling: touch;"
 	>
 		<div class="max-w-2xl mx-auto space-y-6">
+			<!-- Model selector -->
+			<div class="flex justify-center pb-2">
+				<div class="flex items-center gap-2">
+					<span class="text-xs text-gray-500 uppercase tracking-wider">Model</span>
+					<ModelSelector {models} selected={selectedModel} onSelect={handleModelChange} />
+				</div>
+			</div>
 			{#each messages as message, i (message.id)}
 				{@const prevMessage = i > 0 ? messages[i - 1] : null}
 				{@const showTimestamp = prevMessage && (message.timestamp - prevMessage.timestamp > 120000)}
@@ -503,11 +493,7 @@
 	.chat-section {
 		height: 100vh;
 		height: 100dvh;
-	}
-
-	.chat-header-blur {
-		-webkit-backdrop-filter: blur(24px);
-		backdrop-filter: blur(24px);
+		box-sizing: border-box;
 	}
 
 	/* Ensure input stays visible when mobile keyboard is open */

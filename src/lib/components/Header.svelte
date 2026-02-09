@@ -5,7 +5,7 @@
 	let mobileOpen = $state(false);
 
 	const navItems = [
-		{ label: 'Chat', href: '/#chat' },
+		{ label: 'Chat', href: '/chat' },
 		{ label: 'Docs', href: '/docs' },
 		{ label: 'Pricing', href: '/pricing' },
 		{ label: 'About', href: '/about' },
@@ -13,13 +13,10 @@
 	];
 
 	function getHref(item: { href: string }): string {
-		// On the home page, /#chat can just be #chat for smooth scroll
-		if (item.href === '/#chat' && $page.url.pathname === '/') return '#chat';
 		return item.href;
 	}
 
 	function isActive(item: { href: string }): boolean {
-		if (item.href === '/#chat') return false; // anchor, no active state
 		return $page.url.pathname === item.href;
 	}
 
@@ -123,7 +120,7 @@
 
 <!-- Skip to content (accessibility) -->
 <a
-	href="#chat"
+	href="/chat"
 	class="sr-only focus:not-sr-only focus:fixed focus:top-20 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-violet-600 focus:text-white focus:rounded-lg focus:text-sm focus:font-medium"
 >
 	Skip to chat
