@@ -21,6 +21,8 @@
 	let showPrompts = $state(true);
 	let currentFollowUps: string[] = $state([]);
 	let visitedCategories: Set<string> = $state(new Set());
+	let lastResponseSource: string = $state('');
+	let lastUserMessage: string = $state('');
 	let messagesContainer: HTMLElement;
 	let chatSection: HTMLElement;
 	let textareaEl: HTMLTextAreaElement;
@@ -77,6 +79,8 @@
 		showPrompts = true;
 		currentFollowUps = [];
 		visitedCategories = new Set();
+		lastResponseSource = '';
+		lastUserMessage = '';
 		isTyping = false;
 		inputValue = '';
 	}
@@ -116,6 +120,8 @@
 		inputValue = '';
 		showPrompts = false;
 		isTyping = true;
+		lastResponseSource = '';
+		lastUserMessage = message;
 
 		// Reset textarea height
 		if (textareaEl) {
@@ -145,6 +151,7 @@
 			if (!res.ok) {
 				const data = await res.json().catch(() => ({}));
 				isTyping = false;
+				lastResponseSource = data.source ?? 'error';
 				messages = [
 					...messages,
 					{
@@ -195,10 +202,12 @@
 						}
 					];
 				}
+				lastResponseSource = 'llm-stream';
 				setFollowUps(); // LLM response — show default follow-ups
 			} else {
 				const data = await res.json();
 				isTyping = false;
+				lastResponseSource = data.source ?? 'scripted';
 				messages = [
 					...messages,
 					{
@@ -212,13 +221,14 @@
 			}
 		} catch {
 			isTyping = false;
+			lastResponseSource = 'error';
 			messages = [
 				...messages,
 				{
 					id: crypto.randomUUID(),
 					role: 'assistant',
 					content:
-						"Something went wrong reaching my backend. Which is embarrassing, given this is a portfolio site. Try again — or ask Josh directly at the.josh.myers@gmail.com.",
+						"Something went wrong reaching my backend. Which is embarrassing, given this is a portfolio site. Try again — or ask Josh directly.",
 					timestamp: Date.now()
 				}
 			];
@@ -245,6 +255,21 @@
 		textarea.style.height = 'auto';
 		textarea.style.height = Math.min(textarea.scrollHeight, 128) + 'px';
 	}
+
+	function getMailtoLink(question: string): string {
+		const subject = encodeURIComponent('Question from josh-bot');
+		const body = encodeURIComponent(
+			`Hi Josh,\n\nI was chatting with your bot and had a question it couldn't fully answer:\n\n"${question}"\n\nWould love to hear your thoughts.\n\nThanks!`
+		);
+		return `mailto:the.josh.myers@gmail.com?subject=${subject}&body=${body}`;
+	}
+
+	/** Whether to show the "Ask Josh Directly" email button */
+	let showAskJosh = $derived(
+		!isTyping &&
+		lastResponseSource !== '' &&
+		lastResponseSource !== 'scripted'
+	);
 
 	function scrollToAbout() {
 		document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
@@ -331,6 +356,36 @@
 						{prompt}
 					</button>
 				{/each}
+			</div>
+		</div>
+	{/if}
+
+	<!-- "Ask Josh Directly" fallback button -->
+	{#if showAskJosh && lastUserMessage}
+		<div class="px-4 pb-2">
+			<div class="max-w-2xl mx-auto flex justify-center" in:fly={{ y: 8, duration: 250, delay: 200 }}>
+				<a
+					href={getMailtoLink(lastUserMessage)}
+					class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-violet-300 bg-violet-500/[0.06] border border-violet-500/[0.15] hover:bg-violet-500/[0.12] hover:border-violet-500/[0.25] transition-all duration-200"
+					aria-label="Send this question to Josh via email"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="14"
+						height="14"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						aria-hidden="true"
+					>
+						<rect width="20" height="16" x="2" y="4" rx="2" />
+						<path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+					</svg>
+					Ask Josh directly
+				</a>
 			</div>
 		</div>
 	{/if}
