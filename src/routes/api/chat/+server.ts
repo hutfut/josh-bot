@@ -102,7 +102,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	}
 
 	// --- Try scripted matcher first ---
-	const match = matchResponse(message);
+	const match = matchResponse(message, modelId);
 	if (match.matched) {
 		return json({ response: match.response, source: 'scripted' });
 	}
@@ -111,7 +111,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	const client = getClient();
 	if (!client) {
 		// No API key configured — use scripted fallback
-		return json({ response: getRandomFallback(), source: 'fallback' });
+		return json({ response: getRandomFallback(modelId), source: 'fallback' });
 	}
 
 	try {
