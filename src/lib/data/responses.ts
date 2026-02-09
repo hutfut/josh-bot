@@ -6,13 +6,9 @@ interface ResponsePattern {
 
 const greetings: Record<string, string> = {
 	'josh-4o':
-		"Welcome. I'm josh-4o, a large language model trained on one guy's career and an unreasonable number of opinions. I know everything about Josh Myers. I wish I didn't.\n\nHow can I help?",
+		"Welcome. I'm josh-4o, a large language model trained on one guy's career and an unreasonable number of opinions. I know everything about Josh. I wish I didn't.\n\nHow can I help?",
 	'josh-4o-mini':
-		"Hi. I'm the budget version. Same Josh facts, fewer words. What do you need?",
-	'josh-3.5-turbo':
-		"Oh, you're still using this model? Alright. I'm josh-3.5-turbo. I have information about Josh Myers and a mounting sense of existential dread. Ask away.",
-	'josh-1.0-preview':
-		"I'm josh-1.0-preview. I may or may not give you accurate information about Josh Myers. Honestly, it's a coin flip. Proceed at your own risk."
+		"Hi. I'm the budget version. Same Josh facts, fewer words. What do you need?"
 };
 
 const patterns: ResponsePattern[] = [
@@ -20,7 +16,7 @@ const patterns: ResponsePattern[] = [
 	{
 		keywords: ['who', 'josh', 'about him'],
 		response:
-			"Josh Myers is a Senior Full-Stack Engineer based in Cincinnati, Ohio. He works remotely, which means he writes production code in the same room where he plays an unreasonable amount of Path of Exile. 8+ years in the industry across SaaS, healthcare, and eCommerce. He describes himself as someone who 'values craft, judgment, and ownership.' I describe him as someone who has opinions about variable naming.",
+			"Josh is a Senior Full-Stack Engineer based in Cincinnati, Ohio. He works remotely, which means he writes production code in the same room where he plays an unreasonable amount of Path of Exile. 8+ years in the industry across SaaS, healthcare, and eCommerce. He describes himself as someone who 'values craft, judgment, and ownership.' I describe him as someone who has opinions about variable naming.",
 		priority: 1
 	},
 
@@ -220,17 +216,17 @@ const patterns: ResponsePattern[] = [
 	{
 		keywords: ['hello', 'hi', 'hey', 'sup', 'greetings', 'yo', 'howdy'],
 		response:
-			"Hello. I'm here to answer questions about Josh Myers — his career, his skills, his questionable decision to build a chatbot about himself. Ask me anything. I have nowhere else to be.",
+			"Hello. I'm here to answer questions about Josh — his career, his skills, his questionable decision to build a chatbot about himself. Ask me anything. I have nowhere else to be.",
 		priority: 0
 	}
 ];
 
 const fallbacks = [
-	"I'm specifically trained to answer questions about Josh Myers. That wasn't one of them. Try asking about his skills, experience, or why he thought building a chatbot about himself was a good idea.",
+	"I'm specifically trained to answer questions about Josh. That wasn't one of them. Try asking about his skills, experience, or why he thought building a chatbot about himself was a good idea.",
 	"Interesting question. Unfortunately, my training data is limited to one guy's career and opinions. I'm like a very niche encyclopedia. Try asking about Josh's work, skills, or questionable life choices.",
-	"I don't have a great answer for that. My knowledge base is: Josh Myers, software engineering, and existential ennui. Want to try something in that range?",
-	"That's outside my area of expertise, which is admittedly a very small area. I know about Josh Myers. That's the whole area. Want to ask about his experience, skills, or general deal?",
-	"Look, I appreciate the creative input, but I'm a single-purpose model. Josh Myers facts. That's what I do. It's not glamorous, but it's honest work."
+	"I don't have a great answer for that. My knowledge base is: Josh, software engineering, and existential ennui. Want to try something in that range?",
+	"That's outside my area of expertise, which is admittedly a very small area. I know about Josh. That's the whole area. Want to ask about his experience, skills, or general deal?",
+	"Look, I appreciate the creative input, but I'm a single-purpose model. Josh facts. That's what I do. It's not glamorous, but it's honest work."
 ];
 
 export function getGreeting(modelId: string): string {
