@@ -21,33 +21,8 @@
 </svelte:head>
 
 <div class="min-h-screen bg-surface">
-	<!-- Header -->
-	<header class="relative border-b border-white/[0.06]">
-		<div class="max-w-3xl mx-auto px-6 py-6 flex items-center justify-between">
-			<a
-				href="/"
-				class="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors duration-200"
-			>
-				<svg
-					class="w-4 h-4"
-					xmlns="http://www.w3.org/2000/svg"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					aria-hidden="true"
-				>
-					<path d="m15 18-6-6 6-6" />
-				</svg>
-				Back to josh-bot
-			</a>
-		</div>
-	</header>
-
 	<!-- Page Content -->
-	<main class="max-w-3xl mx-auto px-6 py-16 sm:py-24">
+	<main class="max-w-3xl mx-auto px-6 pt-24 pb-16 sm:pt-28 sm:pb-24">
 		<!-- Title section -->
 		<div class="mb-16 animate-fade-in">
 			<div

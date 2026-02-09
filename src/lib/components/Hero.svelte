@@ -5,6 +5,7 @@
 </script>
 
 <section
+	id="hero"
 	class="relative min-h-screen min-h-dvh flex items-center justify-center overflow-hidden"
 	aria-label="Introduction"
 >

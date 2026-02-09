@@ -258,12 +258,12 @@
 <section
 	bind:this={chatSection}
 	id="chat"
-	class="relative flex flex-col bg-surface chat-section"
+	class="relative flex flex-col bg-surface chat-section scroll-mt-16"
 	aria-label="Chat with josh-bot"
 >
 	<!-- Chat header -->
 	<div
-		class="sticky top-0 z-20 flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-surface/80 chat-header-blur"
+		class="sticky top-16 z-20 flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-surface/80 chat-header-blur"
 	>
 		<ModelSelector {models} selected={selectedModel} onSelect={handleModelChange} />
 		<button
