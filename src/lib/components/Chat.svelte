@@ -2,7 +2,7 @@
 	import { onMount, tick } from 'svelte';
 	import type { ChatMessage as ChatMessageType } from '$lib/types';
 	import { models, defaultModel } from '$lib/data/models';
-	import { getGreeting, getResponse, suggestedPrompts } from '$lib/data/responses';
+	import { getGreeting, suggestedPrompts } from '$lib/data/responses';
 	import ModelSelector from './ModelSelector.svelte';
 	import ChatMessage from './ChatMessage.svelte';
 	import TypingIndicator from './TypingIndicator.svelte';
@@ -65,21 +65,51 @@
 
 		await scrollToBottom();
 
-		// Simulate response delay
-		const delay = 600 + Math.random() * 1400;
-		setTimeout(async () => {
+		try {
+			// Build conversation history for the API (exclude the message we just added —
+			// the endpoint receives it separately as `message`)
+			const history = messages
+				.filter((m) => m.role === 'user' || m.role === 'assistant')
+				.slice(0, -1) // exclude the user message we just pushed
+				.map((m) => ({ role: m.role, content: m.content }));
+
+			const res = await fetch('/api/chat', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					message,
+					modelId: selectedModel.id,
+					history
+				})
+			});
+
+			const data = await res.json();
+
 			isTyping = false;
 			messages = [
 				...messages,
 				{
 					id: crypto.randomUUID(),
 					role: 'assistant',
-					content: getResponse(message),
+					content: data.response,
 					timestamp: Date.now()
 				}
 			];
-			await scrollToBottom();
-		}, delay);
+		} catch {
+			isTyping = false;
+			messages = [
+				...messages,
+				{
+					id: crypto.randomUUID(),
+					role: 'assistant',
+					content:
+						"Something went wrong reaching my backend. Which is embarrassing, given this is a portfolio site. Try again — or ask Josh directly at the.josh.myers@gmail.com.",
+					timestamp: Date.now()
+				}
+			];
+		}
+
+		await scrollToBottom();
 	}
 
 	function handleModelChange(model: typeof defaultModel) {

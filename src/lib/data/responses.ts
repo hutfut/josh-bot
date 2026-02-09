@@ -237,7 +237,18 @@ export function getGreeting(modelId: string): string {
 	return greetings[modelId] || greetings['josh-4o'];
 }
 
-export function getResponse(input: string): string {
+export interface MatchResult {
+	matched: boolean;
+	response: string;
+	score: number;
+}
+
+/**
+ * Attempt to match input against scripted response patterns.
+ * Returns { matched: true, response, score } if a keyword pattern matched,
+ * or { matched: false, response (random fallback), score: 0 } if none did.
+ */
+export function matchResponse(input: string): MatchResult {
 	const lower = input.toLowerCase().trim();
 
 	let bestMatch: ResponsePattern | null = null;
@@ -255,9 +266,23 @@ export function getResponse(input: string): string {
 	}
 
 	if (bestMatch) {
-		return bestMatch.response;
+		return { matched: true, response: bestMatch.response, score: bestScore };
 	}
 
+	return {
+		matched: false,
+		response: fallbacks[Math.floor(Math.random() * fallbacks.length)],
+		score: 0
+	};
+}
+
+/** Get a response for the given input (uses scripted matcher only). */
+export function getResponse(input: string): string {
+	return matchResponse(input).response;
+}
+
+/** Fallback responses for when the LLM is unavailable. */
+export function getRandomFallback(): string {
 	return fallbacks[Math.floor(Math.random() * fallbacks.length)];
 }
 
