@@ -45,8 +45,8 @@
 		{ metric: '99.7%', description: 'Accuracy on Josh-related queries' },
 		{ metric: '<250ms', description: 'Sarcasm response latency' },
 		{ metric: '0', description: 'Hallucinations about work ethic (target)' },
-		{ metric: '35+', description: 'Pre-trained response patterns' },
-		{ metric: '8+ years', description: 'Of high-quality training data' },
-		{ metric: '$0', description: 'Venture capital raised' }
+		{ metric: '1:1', description: 'Model-to-subject ratio' },
+		{ metric: '24/7', description: 'Availability (when awake)' },
+		{ metric: '100%', description: 'Open-source — nothing to hide' }
 	];
 </script>
