@@ -1,8 +1,15 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
+	import { fly } from 'svelte/transition';
 	import type { ChatMessage as ChatMessageType } from '$lib/types';
 	import { models, defaultModel } from '$lib/data/models';
-	import { getGreeting, suggestedPrompts } from '$lib/data/responses';
+	import {
+		getGreeting,
+		suggestedPrompts,
+		followUpPrompts,
+		defaultFollowUps,
+		type FollowUp
+	} from '$lib/data/responses';
 	import ModelSelector from './ModelSelector.svelte';
 	import ChatMessage from './ChatMessage.svelte';
 	import TypingIndicator from './TypingIndicator.svelte';
@@ -12,8 +19,50 @@
 	let inputValue = $state('');
 	let isTyping = $state(false);
 	let showPrompts = $state(true);
+	let currentFollowUps: string[] = $state([]);
+	let visitedCategories: Set<string> = $state(new Set());
 	let messagesContainer: HTMLElement;
 	let textareaEl: HTMLTextAreaElement;
+
+	/**
+	 * Pick follow-up prompts from a pool, filtering out already-visited categories.
+	 * Keeps the golden-path item (index 0) if its category hasn't been visited,
+	 * then randomly selects remaining slots from the rest of the pool.
+	 */
+	function pickFollowUps(pool: FollowUp[], count: number = 3): string[] {
+		// Filter out follow-ups whose target category has already been visited
+		const available = pool.filter((f) => !visitedCategories.has(f.category));
+
+		if (available.length === 0) {
+			// Everything visited — fall back to full pool unfiltered
+			const shuffled = [...pool].sort(() => Math.random() - 0.5);
+			return shuffled.slice(0, count).map((f) => f.prompt);
+		}
+
+		if (available.length <= count) {
+			return available.map((f) => f.prompt);
+		}
+
+		// Keep the golden-path item (first available from original order) in position 0
+		const goldenIdx = pool.findIndex((f) => !visitedCategories.has(f.category));
+		const golden = pool[goldenIdx];
+		const rest = available.filter((f) => f !== golden);
+
+		// Randomly pick (count - 1) from the rest
+		const shuffled = rest.sort(() => Math.random() - 0.5);
+		const picked = [golden, ...shuffled.slice(0, count - 1)];
+		return picked.map((f) => f.prompt);
+	}
+
+	function setFollowUps(category?: string) {
+		if (category) {
+			visitedCategories.add(category);
+		}
+		const pool = category && followUpPrompts[category]
+			? followUpPrompts[category]
+			: defaultFollowUps;
+		currentFollowUps = pickFollowUps(pool);
+	}
 
 	function initChat() {
 		messages = [
@@ -25,6 +74,8 @@
 			}
 		];
 		showPrompts = true;
+		currentFollowUps = [];
+		visitedCategories = new Set();
 		isTyping = false;
 		inputValue = '';
 	}
@@ -42,6 +93,9 @@
 	async function handleSend(text?: string) {
 		const message = text || inputValue.trim();
 		if (!message || isTyping) return;
+
+		// Clear follow-ups while waiting for response
+		currentFollowUps = [];
 
 		// Add user message
 		messages = [
@@ -95,6 +149,7 @@
 						timestamp: Date.now()
 					}
 				];
+				setFollowUps();
 			} else if (res.headers.get('X-Response-Source') === 'llm-stream' && res.body) {
 				const streamId = crypto.randomUUID();
 				const reader = res.body.getReader();
@@ -135,6 +190,7 @@
 						}
 					];
 				}
+				setFollowUps(); // LLM response — show default follow-ups
 			} else {
 				const data = await res.json();
 				isTyping = false;
@@ -147,6 +203,7 @@
 						timestamp: Date.now()
 					}
 				];
+				setFollowUps(data.category); // Scripted response — use category-specific follow-ups
 			}
 		} catch {
 			isTyping = false;
@@ -160,6 +217,7 @@
 					timestamp: Date.now()
 				}
 			];
+			setFollowUps();
 		}
 
 		await scrollToBottom();
@@ -239,12 +297,28 @@
 		</div>
 	</div>
 
-	<!-- Suggested prompts -->
+	<!-- Suggested prompts / Follow-up prompts -->
 	{#if showPrompts && messages.length <= 1}
+		<!-- Initial prompts before first message -->
 		<div class="px-4 pb-3">
 			<div class="max-w-2xl mx-auto flex flex-wrap gap-2 justify-center" role="group" aria-label="Suggested questions">
 				{#each suggestedPrompts as prompt}
 					<button
+						onclick={() => handleSend(prompt)}
+						class="px-4 py-2.5 rounded-xl text-sm text-gray-300 bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.08] hover:border-white/[0.15] transition-all duration-200"
+					>
+						{prompt}
+					</button>
+				{/each}
+			</div>
+		</div>
+	{:else if currentFollowUps.length > 0 && !isTyping}
+		<!-- Contextual follow-up prompts -->
+		<div class="px-4 pb-3">
+			<div class="max-w-2xl mx-auto flex flex-wrap gap-2 justify-center" role="group" aria-label="Follow-up questions">
+				{#each currentFollowUps as prompt, i (prompt)}
+					<button
+						in:fly={{ y: 8, duration: 200, delay: i * 80 }}
 						onclick={() => handleSend(prompt)}
 						class="px-4 py-2.5 rounded-xl text-sm text-gray-300 bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.08] hover:border-white/[0.15] transition-all duration-200"
 					>

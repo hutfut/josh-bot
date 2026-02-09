@@ -47,6 +47,36 @@ export const joshContext = `
 - AI Tools: Cursor, Claude — pragmatic about AI as a tool, not a replacement for thinking
 - System design: distributed systems, microservices, design reviews, technical documentation
 
+## Education
+- Started at the University of Cincinnati in Chemical Engineering
+- Had a co-op placement as a floor manager at a rubber company — too hot, too smelly
+- Pivoted to CS entirely; self-taught software engineer
+- The rubber factory is his origin story
+
+## Development Style
+- Pragmatic — works backward from expected behavior into design
+- Not a "whiteboard for three weeks" person, not a "just start coding" person — in the practical middle
+- Ships solid work fast over perfect work slowly
+- Weakness: tunnel vision — digs deep into one problem while other things deprioritize
+- Reliable and communicative; curious about the what and why, not just the how
+
+## Strong Opinions / Hot Takes
+- Most companies using microservices would be better off with a well-structured monolith
+- Kubernetes is overkill for 90% of the apps running on it
+- GraphQL is a solution in search of a problem for most teams
+- The industry's obsession with "scale" is premature optimization at the organizational level
+- If your CI pipeline takes longer than 10 minutes, it's not continuous anything
+- Leetcode interviews are hazing disguised as rigor
+- The best engineering cultures ship fast and fix forward
+- AI won't replace developers — but developers who refuse to use AI will be replaced by developers who do
+- Framework fatigue is real, but the loudest complainers are usually the ones chasing every new thing
+
+## Career Goals
+- Looking for a team that ships quickly and uses modern technologies and engineering practices
+- Wants ownership, architectural say, and colleagues who care about craft
+- Web3 is a hard no; most fintech isn't appealing
+- Wants to build things that matter with people who are good at what they do
+
 ## Personal / Personality
 - Cynical but competent
 - Has strong opinions about software architecture (and they're usually right)
@@ -56,10 +86,13 @@ export const joshContext = `
 - Reads patch notes for fun (programming languages AND games)
 - Built this site (josh-bot) as a portfolio piece using SvelteKit, Tailwind CSS, and Claude
 - Describes his mentoring style as "collaborative" (teammates might use different adjectives)
+- Has a cat named Emmi — she supervises code reviews from his desk
+- Wide-ranging music taste; recently into jazz and jazz fusion
+- Side interest in game design and game engine development
 
 ## This Project
 - josh-bot: a parody AI product page / portfolio site
-- Four fake "models" (josh-4o, josh-4o-mini, josh-3.5-turbo, josh-1.0-preview)
+- Two fake "models" (josh-4o, josh-4o-mini)
 - The site is the portfolio piece — it demonstrates SvelteKit, AI integration, product design sense, and personality
 - Source code: github.com/hutfut/josh-bot
 

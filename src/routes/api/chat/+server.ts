@@ -104,7 +104,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	// --- Try scripted matcher first ---
 	const match = matchResponse(message, modelId);
 	if (match.matched) {
-		return json({ response: match.response, source: 'scripted' });
+		return json({ response: match.response, source: 'scripted', category: match.category });
 	}
 
 	// --- Fall back to LLM ---
