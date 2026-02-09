@@ -13,7 +13,22 @@ const RATE_LIMIT_MAX_REQUESTS = 20; // max requests per window
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
+let lastCleanup = Date.now();
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+
+function cleanupStaleEntries(): void {
+	const now = Date.now();
+	if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
+	lastCleanup = now;
+	for (const [ip, entry] of rateLimitMap) {
+		if (now > entry.resetAt) {
+			rateLimitMap.delete(ip);
+		}
+	}
+}
+
 function isRateLimited(ip: string): boolean {
+	cleanupStaleEntries();
 	const now = Date.now();
 	const entry = rateLimitMap.get(ip);
 
@@ -25,19 +40,6 @@ function isRateLimited(ip: string): boolean {
 	entry.count++;
 	return entry.count > RATE_LIMIT_MAX_REQUESTS;
 }
-
-// Periodically clean up stale entries (every 5 minutes)
-setInterval(
-	() => {
-		const now = Date.now();
-		for (const [ip, entry] of rateLimitMap) {
-			if (now > entry.resetAt) {
-				rateLimitMap.delete(ip);
-			}
-		}
-	},
-	5 * 60 * 1000
-);
 
 // ---------------------------------------------------------------------------
 // Anthropic client (lazy — only created if API key exists)
