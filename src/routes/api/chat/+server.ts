@@ -3,7 +3,8 @@ import type { RequestHandler } from './$types';
 import Anthropic from '@anthropic-ai/sdk';
 import { env } from '$env/dynamic/private';
 import { getSystemPrompt } from '$lib/server/prompts';
-import { matchResponse, getRandomFallback } from '$lib/data/responses';
+import { getRandomLlmUnavailableFallback } from '$lib/data/responses';
+import type { Persona } from '$lib/types';
 
 // ---------------------------------------------------------------------------
 // Rate limiting (in-memory, per-IP, resets on server restart)
@@ -55,20 +56,23 @@ function getClient(): Anthropic | null {
 }
 
 // ---------------------------------------------------------------------------
+// Persona context snippets (appended to the system prompt when provided)
+// ---------------------------------------------------------------------------
+const personaContext: Record<Persona, string> = {
+	recruiter:
+		'The visitor identified themselves as a recruiter. They are likely evaluating Josh as a candidate. Emphasize professional strengths, concrete accomplishments, and relevant experience. Keep the dry humor but lean toward making a compelling case.',
+	engineer:
+		'The visitor identified themselves as a fellow engineer. They are likely interested in technical depth. Go deeper on architecture, tooling, and opinions. You can assume a higher baseline of technical knowledge.',
+	curious:
+		'The visitor is just browsing out of curiosity. Keep it entertaining and personality-forward. Lead with the interesting stuff — hot takes, quirks, hobbies. Weave in career content naturally.'
+};
+
+// ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
 const LLM_MODEL = 'claude-sonnet-4-20250514';
 const MAX_TOKENS = 250;
 const MAX_HISTORY_MESSAGES = 10; // send last N messages as context
-const CANNED_ERROR_RESPONSES = [
-	"I'm experiencing technical difficulties. Which is to say, my API bill is higher than Josh's salary. Try again in a moment, or ask me something I have a scripted answer for — like his skills, experience, or questionable life choices.",
-	"Something went wrong on my end. I'd blame the infrastructure, but Josh built it, so I'll just say: try again. If it keeps failing, ask about his career — I have those answers memorized.",
-	"My backend just threw an error. Ironic, given that Josh lists 'backend engineering' as a core skill. Give it another shot."
-];
-
-function getErrorResponse(): string {
-	return CANNED_ERROR_RESPONSES[Math.floor(Math.random() * CANNED_ERROR_RESPONSES.length)];
-}
 
 // ---------------------------------------------------------------------------
 // POST /api/chat
@@ -88,34 +92,41 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	}
 
 	// --- Parse request ---
-	let body: { message: string; modelId: string; history?: { role: string; content: string }[] };
+	let body: {
+		message: string;
+		modelId: string;
+		history?: { role: string; content: string }[];
+		persona?: Persona;
+	};
 	try {
 		body = await request.json();
 	} catch {
 		return json({ response: 'Invalid request.', source: 'error' }, { status: 400 });
 	}
 
-	const { message, modelId, history = [] } = body;
+	const { message, modelId, history = [], persona } = body;
 
 	if (!message || typeof message !== 'string') {
 		return json({ response: 'No message provided.', source: 'error' }, { status: 400 });
 	}
 
-	// --- Try scripted matcher first ---
-	const match = matchResponse(message, modelId);
-	if (match.matched) {
-		return json({ response: match.response, source: 'scripted', category: match.category });
-	}
-
-	// --- Fall back to LLM ---
+	// --- LLM ---
 	const client = getClient();
 	if (!client) {
-		// No API key configured — use scripted fallback
-		return json({ response: getRandomFallback(modelId), source: 'fallback' });
+		// No API key configured — return a funny fallback pointing to pills
+		return json({
+			response: getRandomLlmUnavailableFallback(),
+			source: 'llm-unavailable'
+		});
 	}
 
 	try {
-		const systemPrompt = getSystemPrompt(modelId);
+		let systemPrompt = getSystemPrompt(modelId);
+
+		// Append persona context if provided
+		if (persona && personaContext[persona]) {
+			systemPrompt += `\n\nVISITOR CONTEXT:\n${personaContext[persona]}`;
+		}
 
 		// Build conversation history for the LLM (last N messages)
 		const trimmedHistory = history.slice(-MAX_HISTORY_MESSAGES).map((msg) => ({
@@ -163,6 +174,9 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 		});
 	} catch (err) {
 		console.error('[api/chat] LLM error:', err);
-		return json({ response: getErrorResponse(), source: 'error' });
+		return json({
+			response: getRandomLlmUnavailableFallback(),
+			source: 'llm-unavailable'
+		});
 	}
 };

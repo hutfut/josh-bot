@@ -25,8 +25,8 @@
 	function formatSource(source: string): string {
 		switch (source) {
 			case 'llm-stream': return 'inference';
-			case 'scripted': return 'scripted';
-			case 'fallback': return 'fallback';
+			case 'prebaked': return 'prebaked';
+			case 'llm-unavailable': return 'offline';
 			case 'rate-limit': return 'rate-limit';
 			case 'error': return 'error';
 			default: return source;
@@ -35,7 +35,7 @@
 
 	function formatMetadata(msg: ChatMessage): string {
 		if (!msg.metadata) return '';
-		const source = formatSource(msg.source ?? 'scripted');
+		const source = formatSource(msg.source ?? 'prebaked');
 		const confidence = (msg.metadata.confidence * 100).toFixed(1);
 		const tokens = msg.source === 'llm-stream'
 			? `~${msg.metadata.tokens} tokens`

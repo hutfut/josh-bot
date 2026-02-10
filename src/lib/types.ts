@@ -1,4 +1,6 @@
-export type ResponseSource = 'scripted' | 'llm-stream' | 'fallback' | 'error' | 'rate-limit';
+export type ResponseSource = 'prebaked' | 'llm-stream' | 'llm-unavailable' | 'error' | 'rate-limit';
+
+export type Persona = 'recruiter' | 'engineer' | 'curious';
 
 export interface MessageMetadata {
 	confidence: number;
@@ -13,6 +15,11 @@ export interface ChatMessage {
 	timestamp: number;
 	source?: ResponseSource;
 	metadata?: MessageMetadata;
+}
+
+export interface ActionPill {
+	type: 'email' | 'navigate';
+	href: string;
 }
 
 export interface Model {
