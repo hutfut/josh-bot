@@ -71,7 +71,7 @@ const personaContext: Record<Persona, string> = {
 // Config
 // ---------------------------------------------------------------------------
 const LLM_MODEL = 'claude-sonnet-4-20250514';
-const MAX_TOKENS = 250;
+const MAX_TOKENS = 350;
 const MAX_HISTORY_MESSAGES = 10; // send last N messages as context
 
 // ---------------------------------------------------------------------------
