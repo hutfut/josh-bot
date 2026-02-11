@@ -51,11 +51,11 @@
 		style="-webkit-overflow-scrolling: touch;"
 	>
 		<div class="max-w-2xl mx-auto space-y-6">
-			<!-- Model selector -->
+			<!-- Voice selector -->
 			<div class="flex justify-center pb-2">
 				<div class="flex items-center gap-2">
-					<span class="text-xs text-gray-500 uppercase tracking-wider">Model</span>
-					<ModelSelector models={chat.models} selected={chat.selectedModel} onSelect={chat.handleModelChange} />
+					<span class="text-xs text-gray-500 uppercase tracking-wider">Voice</span>
+					<ModelSelector voices={chat.voices} selected={chat.selectedVoice} onSelect={chat.handleVoiceChange} />
 				</div>
 			</div>
 			{#each chat.messages as message, i (message.id)}
@@ -68,11 +68,11 @@
 						</span>
 					</div>
 				{/if}
-				<ChatMessageComponent {message} modelName={chat.selectedModel.name} />
+				<ChatMessageComponent {message} voiceName={chat.selectedVoice.name} />
 			{/each}
 
 			{#if chat.isTyping}
-				<TypingIndicator modelName={chat.selectedModel.name} />
+				<TypingIndicator voiceName={chat.selectedVoice.name} />
 			{/if}
 		</div>
 	</div>
@@ -82,10 +82,8 @@
 		messages={chat.messages}
 		isTyping={chat.isTyping}
 		currentFollowUps={chat.currentFollowUps}
-		followUpCategoryMap={chat.followUpCategoryMap}
 		followUpActionMap={chat.followUpActionMap}
 		onPersonaSelect={chat.handlePersonaSelect}
-		onPillClick={chat.handlePillClick}
 		onSend={(text) => chat.handleSend(text)}
 	/>
 

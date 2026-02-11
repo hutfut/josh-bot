@@ -3,10 +3,10 @@
 
 	let {
 		message,
-		modelName
+		voiceName
 	}: {
 		message: ChatMessage;
-		modelName: string;
+		voiceName: string;
 	} = $props();
 
 	let copied = $state(false);
@@ -22,25 +22,13 @@
 		'Acknowledged. Nothing will change.'
 	];
 
-	function formatSource(source: string): string {
-		switch (source) {
-			case 'llm-stream': return 'inference';
-			case 'prebaked': return 'prebaked';
-			case 'llm-unavailable': return 'offline';
-			case 'rate-limit': return 'rate-limit';
-			case 'error': return 'error';
-			default: return source;
-		}
-	}
-
 	function formatMetadata(msg: ChatMessage): string {
 		if (!msg.metadata) return '';
-		const source = formatSource(msg.source ?? 'prebaked');
-		const confidence = (msg.metadata.confidence * 100).toFixed(1);
-		const tokens = msg.source === 'llm-stream'
+		const tokens = msg.metadata.tokens > 0
 			? `~${msg.metadata.tokens} tokens`
-			: `${msg.metadata.tokens} tokens`;
-		return `${source} · ${confidence}% confidence · ${tokens}`;
+			: '';
+		const latency = `${(msg.metadata.latency / 1000).toFixed(1)}s`;
+		return [tokens, latency].filter(Boolean).join(' · ');
 	}
 
 	async function handleCopy() {
@@ -67,7 +55,7 @@
 </script>
 
 {#if message.role === 'assistant'}
-	<div class="flex gap-3 animate-slide-up group/msg" role="article" aria-label="{modelName} response">
+	<div class="flex gap-3 animate-slide-up group/msg" role="article" aria-label="{voiceName} response">
 		<div
 			class="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0 mt-0.5 select-none"
 			aria-hidden="true"
@@ -75,7 +63,7 @@
 			j
 		</div>
 		<div class="flex-1 min-w-0">
-			<p class="text-xs text-gray-500 mb-1.5 font-medium">{modelName}</p>
+			<p class="text-xs text-gray-500 mb-1.5 font-medium">{voiceName}</p>
 			<div class="text-[14px] text-gray-200 leading-relaxed whitespace-pre-line">
 				{message.content}
 			</div>

@@ -1,32 +1,30 @@
-import type { Model } from '$lib/types';
+import type { Voice } from '$lib/types';
 
-export const models: Model[] = [
+export const voices: Voice[] = [
 	{
-		id: 'josh-4o',
-		name: 'josh-4o',
-		description: 'Our most capable Josh model',
-		badge: 'Latest'
+		id: 'butler',
+		name: 'The Butler',
+		description: 'Begrudgingly helpful. Formally unimpressed.',
+		badge: 'Default'
 	},
 	{
-		id: 'josh-4o-mini',
-		name: 'josh-4o-mini',
-		description: 'Faster, lighter, same opinions',
-		badge: 'Fast'
+		id: 'engineer',
+		name: 'The Engineer',
+		description: 'Blunt. No-nonsense. Skips the pleasantries.',
+		badge: 'Direct'
 	},
 	{
-		id: 'josh-o3-mini',
-		name: 'josh-o3-mini',
-		description: 'Thinks before speaking. A first.',
-		badge: 'Coming Soon',
-		comingSoon: true
+		id: 'spokesperson',
+		name: 'The Spokesperson',
+		description: 'Corporate polish. Strategic omissions.',
+		badge: 'PR'
 	},
 	{
-		id: 'josh-4o-vision',
-		name: 'josh-4o-vision',
-		description: 'Judges your code by looking at it.',
-		badge: 'Research',
-		comingSoon: true
+		id: 'hype',
+		name: 'The Hype Man',
+		description: 'Unreasonably enthusiastic about everything.',
+		badge: 'Energy'
 	}
 ];
 
-export const defaultModel = models[0];
+export const defaultVoice = voices[0];

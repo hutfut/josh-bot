@@ -2,19 +2,11 @@
 // Barrel re-export — split into focused modules for easier navigation
 // ---------------------------------------------------------------------------
 
-export { getGreeting, getPersonaWelcome, personaLabels } from './greetings';
+export { getGreeting, personaLabels } from './greetings';
 export {
-	prebaked,
-	getPrebakedResponse,
-	getRandomHotTake,
-	hotTakesList,
-	HOT_TAKE_LIMIT,
-	type PrebakedResponse,
-	type HotTake
-} from './prebaked';
-export {
+	topicPills,
+	personaTopicOrder,
 	personaInitialFollowUps,
-	personaFollowUpPrompts,
 	defaultFollowUps,
 	emailPillAfter,
 	aboutPillAfter,

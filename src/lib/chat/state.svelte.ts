@@ -4,21 +4,16 @@ import type {
 	Persona,
 	ActionPill
 } from '$lib/types';
-import { models, defaultModel } from '$lib/data/models';
+import { voices, defaultVoice } from '$lib/data/models';
 import {
 	getGreeting,
-	getPersonaWelcome,
-	getPrebakedResponse,
-	getRandomHotTake,
-	hotTakesList,
-	HOT_TAKE_LIMIT,
 	personaLabels,
+	topicPills,
+	personaTopicOrder,
 	personaInitialFollowUps,
-	personaFollowUpPrompts,
 	defaultFollowUps,
 	emailPillAfter,
-	aboutPillAfter,
-	type FollowUp
+	aboutPillAfter
 } from '$lib/data/responses';
 import { generateMetadata, getReachOutMailtoLink } from './utils';
 
@@ -37,7 +32,7 @@ export interface ChatCallbacks {
 
 export function createChatState(callbacks: ChatCallbacks) {
 	// ---- Reactive state ----
-	let selectedModel = $state(defaultModel);
+	let selectedVoice = $state(defaultVoice);
 	let messages: ChatMessageType[] = $state([]);
 	let inputValue = $state('');
 	let isTyping = $state(false);
@@ -46,9 +41,8 @@ export function createChatState(callbacks: ChatCallbacks) {
 	let lastResponseSource: string = $state('');
 	let lastUserMessage: string = $state('');
 	let selectedPersona: Persona | null = $state(null);
-	let shownHotTakeIndices: number[] = $state([]);
 
-	// Map from follow-up prompt text to category for client-side pill resolution
+	// Map from follow-up prompt text to category for pill dedup tracking
 	let followUpCategoryMap: Map<string, string> = $state(new Map());
 
 	// Map from follow-up prompt text to action metadata for special link pills
@@ -60,48 +54,34 @@ export function createChatState(callbacks: ChatCallbacks) {
 	const showAskJosh = $derived(
 		!isTyping &&
 		lastResponseSource !== '' &&
-		lastResponseSource !== 'prebaked'
+		lastResponseSource !== 'error'
 	);
 
 	// ---- Internal helpers ----
 
 	/**
-	 * Pick follow-up prompts from a pool, filtering out already-visited categories.
-	 * Keeps the golden-path item (index 0) if its category hasn't been visited,
-	 * then randomly selects remaining slots from the rest of the pool.
+	 * Pick follow-up pills from a list of category IDs.
+	 * Filters out already-visited categories and returns the next batch.
 	 */
-	function pickFollowUps(pool: FollowUp[], count: number = 3): string[] {
-		const available = pool.filter((f) => !visitedCategories.has(f.category));
+	function pickFollowUps(categoryIds: string[], count: number = 3): string[] {
+		const available = categoryIds.filter((id) => !visitedCategories.has(id));
+		const toShow = available.length > 0 ? available.slice(0, count) : categoryIds.slice(0, count);
 
-		if (available.length === 0) {
-			const shuffled = [...pool].sort(() => Math.random() - 0.5);
-			const picked = shuffled.slice(0, count);
-			for (const f of picked) {
-				followUpCategoryMap.set(f.prompt, f.category);
+		const result: string[] = [];
+		for (const id of toShow) {
+			const pill = topicPills[id];
+			if (pill) {
+				followUpCategoryMap.set(pill.prompt, pill.category);
+				result.push(pill.prompt);
 			}
-			return picked.map((f) => f.prompt);
 		}
-
-		if (available.length <= count) {
-			for (const f of available) {
-				followUpCategoryMap.set(f.prompt, f.category);
-			}
-			return available.map((f) => f.prompt);
-		}
-
-		// Keep the golden-path item (first available from original order) in position 0
-		const goldenIdx = pool.findIndex((f) => !visitedCategories.has(f.category));
-		const golden = pool[goldenIdx];
-		const rest = available.filter((f) => f !== golden);
-
-		const shuffled = rest.sort(() => Math.random() - 0.5);
-		const picked = [golden, ...shuffled.slice(0, count - 1)];
-		for (const f of picked) {
-			followUpCategoryMap.set(f.prompt, f.category);
-		}
-		return picked.map((f) => f.prompt);
+		return result;
 	}
 
+	/**
+	 * Generate follow-up pills based on the current persona and last category.
+	 * Also injects action pills (email, resume link) where appropriate.
+	 */
 	function setFollowUps(category?: string) {
 		if (category) {
 			visitedCategories.add(category);
@@ -110,18 +90,14 @@ export function createChatState(callbacks: ChatCallbacks) {
 		// Reset action pill map for each new set of follow-ups
 		followUpActionMap = new Map();
 
-		// Use persona-specific follow-ups when a persona is active
 		const persona = selectedPersona ?? 'curious';
-		const personaMap = personaFollowUpPrompts[persona];
-		const pool = category && personaMap[category]
-			? personaMap[category]
-			: defaultFollowUps;
-		currentFollowUps = pickFollowUps(pool);
+		const topicOrder = personaTopicOrder[persona];
+		currentFollowUps = pickFollowUps(topicOrder);
 
 		// Inject action pills based on category + persona
 		if (category) {
 			if (emailPillAfter[persona]?.has(category)) {
-				const prompt = category === 'salary' ? 'Ask Josh directly' : 'Email Josh directly';
+				const prompt = 'Email Josh directly';
 				followUpActionMap.set(prompt, { type: 'email', href: getReachOutMailtoLink() });
 				currentFollowUps = [...currentFollowUps, prompt];
 			}
@@ -136,22 +112,19 @@ export function createChatState(callbacks: ChatCallbacks) {
 	// ---- Public actions ----
 
 	function initChat() {
-		const greeting = getGreeting(selectedModel.id);
+		const greeting = getGreeting(selectedVoice.id);
 		messages = [
 			{
 				id: crypto.randomUUID(),
 				role: 'assistant',
 				content: greeting,
-				timestamp: Date.now(),
-				source: 'prebaked',
-				metadata: generateMetadata('prebaked', greeting.length, Math.round(8 + Math.random() * 12))
+				timestamp: Date.now()
 			}
 		];
 		currentFollowUps = [];
 		visitedCategories = new Set();
 		followUpCategoryMap = new Map();
 		followUpActionMap = new Map();
-		shownHotTakeIndices = [];
 		lastResponseSource = '';
 		lastUserMessage = '';
 		selectedPersona = null;
@@ -161,149 +134,40 @@ export function createChatState(callbacks: ChatCallbacks) {
 
 	/**
 	 * Handle persona selection from the initial pills.
+	 * Sends the persona label to the LLM for a voice-appropriate welcome.
 	 */
 	async function handlePersonaSelect(persona: Persona) {
 		selectedPersona = persona;
 
-		// Add user message showing what they picked
-		messages = [
-			...messages,
-			{
-				id: crypto.randomUUID(),
-				role: 'user',
-				content: personaLabels[persona],
-				timestamp: Date.now()
-			}
-		];
-
-		await callbacks.scrollToBottom();
-
-		// Brief artificial delay for feel
-		isTyping = true;
-		await new Promise((r) => setTimeout(r, 300 + Math.random() * 400));
-		isTyping = false;
-
-		// Add persona-specific welcome
-		const welcome = getPersonaWelcome(selectedModel.id, persona);
-		messages = [
-			...messages,
-			{
-				id: crypto.randomUUID(),
-				role: 'assistant',
-				content: welcome,
-				timestamp: Date.now(),
-				source: 'prebaked',
-				metadata: generateMetadata('prebaked', welcome.length, Math.round(8 + Math.random() * 12))
-			}
-		];
+		// Send persona label to LLM — skip automatic follow-up generation
+		await handleSend(personaLabels[persona], true);
 
 		// Set persona-specific initial follow-ups
-		followUpActionMap = new Map();
 		const initial = personaInitialFollowUps[persona];
-		for (const f of initial) {
-			followUpCategoryMap.set(f.prompt, f.category);
+		followUpCategoryMap = new Map();
+		followUpActionMap = new Map();
+		const result: string[] = [];
+		for (const id of initial) {
+			const pill = topicPills[id];
+			if (pill) {
+				followUpCategoryMap.set(pill.prompt, pill.category);
+				result.push(pill.prompt);
+			}
 		}
-		currentFollowUps = pickFollowUps(initial, 4);
-
-		await callbacks.scrollToBottom();
+		currentFollowUps = result;
 	}
 
 	/**
-	 * Handle a prebaked pill click — resolves entirely client-side.
+	 * Handle any message — pill clicks and free-text both go to the LLM.
+	 * @param text - The message text (uses inputValue if not provided)
+	 * @param skipFollowUps - If true, don't auto-generate follow-ups (used by handlePersonaSelect)
 	 */
-	async function handlePillClick(prompt: string, category: string) {
-		if (isTyping) return;
-
-		// Auto-assign persona if not yet chosen
-		if (!selectedPersona) {
-			selectedPersona = 'curious';
-		}
-
-		// Clear follow-ups while "processing"
-		currentFollowUps = [];
-
-		// Add user message
-		messages = [
-			...messages,
-			{
-				id: crypto.randomUUID(),
-				role: 'user',
-				content: prompt,
-				timestamp: Date.now()
-			}
-		];
-
-		await callbacks.scrollToBottom();
-
-		// Brief artificial delay for feel
-		isTyping = true;
-		await new Promise((r) => setTimeout(r, 200 + Math.random() * 300));
-		isTyping = false;
-
-		// Look up the response — hot takes use a random picker
-		let response: string | null;
-
-		if (category === 'hotTakes') {
-			const result = getRandomHotTake(shownHotTakeIndices, selectedModel.id);
-			if (result) {
-				shownHotTakeIndices = [...shownHotTakeIndices, result.index];
-				response = result.text;
-			} else {
-				response = getPrebakedResponse(category, selectedModel.id);
-			}
-		} else {
-			response = getPrebakedResponse(category, selectedModel.id);
-		}
-
-		if (!response) return;
-
-		lastResponseSource = 'prebaked';
-		lastUserMessage = prompt;
-
-		messages = [
-			...messages,
-			{
-				id: crypto.randomUUID(),
-				role: 'assistant',
-				content: response,
-				timestamp: Date.now(),
-				source: 'prebaked',
-				metadata: generateMetadata('prebaked', response.length, Math.round(8 + Math.random() * 12))
-			}
-		];
-
-		setFollowUps(category);
-
-		// For hot takes: allow revisits and inject "another" pill if more are available
-		if (category === 'hotTakes') {
-			visitedCategories.delete('hotTakes');
-			const hasMore =
-				shownHotTakeIndices.length < HOT_TAKE_LIMIT &&
-				shownHotTakeIndices.length < hotTakesList.length;
-			if (hasMore) {
-				const anotherPrompt = 'Give me another hot take';
-				followUpCategoryMap.set(anotherPrompt, 'hotTakes');
-				currentFollowUps = [anotherPrompt, ...currentFollowUps];
-			}
-		}
-
-		await callbacks.scrollToBottom();
-	}
-
-	/**
-	 * Handle free-text send — goes to the LLM via /api/chat.
-	 */
-	async function handleSend(text?: string) {
+	async function handleSend(text?: string, skipFollowUps: boolean = false) {
 		const message = text || inputValue.trim();
 		if (!message || isTyping) return;
 
-		// If this message matches a follow-up pill, handle it as a pill click
+		// Check if this message matches a pill category (for visited tracking)
 		const category = followUpCategoryMap.get(message);
-		if (category) {
-			handlePillClick(message, category);
-			inputValue = '';
-			return;
-		}
 
 		// Auto-assign persona if not yet chosen
 		if (!selectedPersona) {
@@ -346,7 +210,7 @@ export function createChatState(callbacks: ChatCallbacks) {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					message,
-					modelId: selectedModel.id,
+					voiceId: selectedVoice.id,
 					history,
 					persona: selectedPersona
 				})
@@ -370,7 +234,7 @@ export function createChatState(callbacks: ChatCallbacks) {
 						metadata: generateMetadata(source, content.length, latency)
 					}
 				];
-				setFollowUps();
+				if (!skipFollowUps) setFollowUps(category);
 			} else if (res.headers.get('X-Response-Source') === 'llm-stream' && res.body) {
 				const streamId = crypto.randomUUID();
 				const reader = res.body.getReader();
@@ -425,7 +289,7 @@ export function createChatState(callbacks: ChatCallbacks) {
 					);
 				}
 				lastResponseSource = 'llm-stream';
-				setFollowUps();
+				if (!skipFollowUps) setFollowUps(category);
 			} else {
 				// JSON response (llm-unavailable, error, etc.)
 				const data = await res.json();
@@ -444,7 +308,7 @@ export function createChatState(callbacks: ChatCallbacks) {
 						metadata: generateMetadata(source, data.response.length, latency)
 					}
 				];
-				setFollowUps();
+				if (!skipFollowUps) setFollowUps(category);
 			}
 		} catch {
 			isTyping = false;
@@ -462,14 +326,14 @@ export function createChatState(callbacks: ChatCallbacks) {
 					metadata: generateMetadata('error', errorContent.length, latency)
 				}
 			];
-			setFollowUps();
+			if (!skipFollowUps) setFollowUps();
 		}
 
 		await callbacks.scrollToBottom();
 	}
 
-	function handleModelChange(model: typeof defaultModel) {
-		selectedModel = model;
+	function handleVoiceChange(voice: typeof defaultVoice) {
+		selectedVoice = voice;
 		initChat();
 	}
 
@@ -482,7 +346,7 @@ export function createChatState(callbacks: ChatCallbacks) {
 		get currentFollowUps() { return currentFollowUps; },
 		get followUpCategoryMap() { return followUpCategoryMap; },
 		get followUpActionMap() { return followUpActionMap; },
-		get selectedModel() { return selectedModel; },
+		get selectedVoice() { return selectedVoice; },
 		get selectedPersona() { return selectedPersona; },
 		get lastUserMessage() { return lastUserMessage; },
 		get showAskJosh() { return showAskJosh; },
@@ -492,14 +356,13 @@ export function createChatState(callbacks: ChatCallbacks) {
 		set inputValue(v: string) { inputValue = v; },
 
 		// Static references
-		models,
+		voices,
 
 		// Actions
 		initChat,
 		handlePersonaSelect,
-		handlePillClick,
 		handleSend,
-		handleModelChange
+		handleVoiceChange
 	};
 }
 

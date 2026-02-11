@@ -121,8 +121,8 @@ export const joshContext = `
 
 ## This Project
 - josh-bot: a parody AI product page / portfolio site
-- Two fake "models" (josh-4o, josh-4o-mini) — each with a distinct personality
-- Architecture: most chat interactions are served from curated prebaked responses with persona-aware follow-up routing (recruiter gets different conversation paths than engineer gets different paths than casual browser). LLM is a fallback for free-text questions, not the default. Fast, consistent, and doesn't cost Josh money every time someone asks about his cat.
+- Multiple selectable "voices" (The Butler, The Engineer, The Spokesperson, The Hype Man) — each with a distinct personality that repackages the same factual content
+- Architecture: all chat responses are LLM-generated. User selects a persona (recruiter, engineer, curious) which tailors content emphasis. The voice selection changes tone and personality. Curated follow-up pills guide the conversation without scripting it.
 - Built with SvelteKit, Tailwind CSS, and Claude
 - The site is the portfolio piece — it demonstrates SvelteKit, AI integration, product design sense, and personality
 - Source code: github.com/hutfut/josh-bot

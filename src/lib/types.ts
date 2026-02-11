@@ -1,9 +1,8 @@
-export type ResponseSource = 'prebaked' | 'llm-stream' | 'llm-unavailable' | 'error' | 'rate-limit';
+export type ResponseSource = 'llm-stream' | 'llm-unavailable' | 'error' | 'rate-limit';
 
 export type Persona = 'recruiter' | 'engineer' | 'curious';
 
 export interface MessageMetadata {
-	confidence: number;
 	tokens: number;
 	latency: number;
 }
@@ -22,10 +21,9 @@ export interface ActionPill {
 	href: string;
 }
 
-export interface Model {
+export interface Voice {
 	id: string;
 	name: string;
 	description: string;
 	badge?: string;
-	comingSoon?: boolean;
 }

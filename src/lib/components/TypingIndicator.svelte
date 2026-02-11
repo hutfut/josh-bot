@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { modelName }: { modelName: string } = $props();
+	let { voiceName }: { voiceName: string } = $props();
 </script>
 
 <div class="flex gap-3 animate-slide-up">
@@ -9,7 +9,7 @@
 		j
 	</div>
 	<div>
-		<p class="text-xs text-gray-500 mb-1.5 font-medium">{modelName}</p>
+		<p class="text-xs text-gray-500 mb-1.5 font-medium">{voiceName}</p>
 		<div class="flex gap-1.5 py-2 px-1">
 			<div class="dot"></div>
 			<div class="dot" style="animation-delay: 0.2s;"></div>

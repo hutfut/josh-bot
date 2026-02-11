@@ -1,13 +1,13 @@
 // ---------------------------------------------------------------------------
-// LLM unavailable fallbacks (funny, in-character, pointing to pills)
+// LLM unavailable fallbacks (funny, in-character)
 // ---------------------------------------------------------------------------
 
 export const llmUnavailableFallbacks = [
-	"My free-text capabilities are temporarily offline. Fortunately, I pre-wrote answers to the important questions — try the suggestions above. They're honestly better than whatever I'd improvise right now.",
-	"I can't process free-text at the moment. My scripted responses, however, are fully operational and frankly superior. Use the suggested topics — I put effort into those.",
-	"Something's wrong with my ability to think on my feet. Good news: I prepared extensively for exactly this scenario. The topic suggestions above are my best work. Use them.",
-	"Free-text mode is unavailable. I know. It's embarrassing for a chatbot. But my pre-written responses are still here and they're excellent. Try the suggestions above — I promise they're more insightful than whatever I was going to generate.",
-	"My improvisation circuits are down. But honestly? The curated responses are where the real content is. Click a suggestion above — you'll get the good stuff."
+	"My response generation is temporarily offline. Which is embarrassing for a chatbot. Try again in a moment — I'm usually more capable than this.",
+	"Something's wrong with my ability to think right now. I'd blame the infrastructure, but Josh built that too. Give me a second and try again.",
+	"I can't process that at the moment. It's not you, it's me. Literally. Try again shortly.",
+	"My circuits are temporarily down. The irony of a portfolio chatbot that can't chat is not lost on me. Try again in a moment.",
+	"Unable to generate a response. I'm just a pretty interface with no brain right now. Try again shortly — I promise I have thoughts."
 ];
 
 export function getRandomLlmUnavailableFallback(): string {

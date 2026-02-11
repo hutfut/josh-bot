@@ -9,10 +9,8 @@
 		messages: ChatMessage[];
 		isTyping: boolean;
 		currentFollowUps: string[];
-		followUpCategoryMap: Map<string, string>;
 		followUpActionMap: Map<string, ActionPill>;
 		onPersonaSelect: (persona: Persona) => void;
-		onPillClick: (prompt: string, category: string) => void;
 		onSend: (text: string) => void;
 	}
 
@@ -21,10 +19,8 @@
 		messages,
 		isTyping,
 		currentFollowUps,
-		followUpCategoryMap,
 		followUpActionMap,
 		onPersonaSelect,
-		onPillClick,
 		onSend
 	}: Props = $props();
 
@@ -139,7 +135,6 @@
 					style="transform-origin: 0 0; transform: scale({scale});"
 				>
 					{#each currentFollowUps as prompt, i (prompt)}
-						{@const category = followUpCategoryMap.get(prompt)}
 						{@const action = followUpActionMap.get(prompt)}
 						{#if action}
 							<a
@@ -159,7 +154,7 @@
 						{:else}
 							<button
 								in:fly={{ y: 8, duration: 200, delay: i * 80 }}
-								onclick={() => category ? onPillClick(prompt, category) : onSend(prompt)}
+								onclick={() => onSend(prompt)}
 								class="pill px-4 py-2.5 rounded-xl text-sm text-gray-300 bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.08] hover:border-white/[0.15] transition-all duration-200 whitespace-nowrap"
 							>
 								{prompt}
@@ -173,7 +168,7 @@
 {/if}
 
 <style>
-	/* Scale wrapper: height is set by JS when row is scaled so layout doesn’t leave a gap */
+	/* Scale wrapper: height is set by JS when row is scaled so layout doesn't leave a gap */
 	.pill-scale-wrapper {
 		line-height: 0;
 	}

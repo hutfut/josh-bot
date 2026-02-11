@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import Anthropic from '@anthropic-ai/sdk';
 import { env } from '$env/dynamic/private';
 import { getSystemPrompt } from '$lib/server/prompts';
-import { getRandomLlmUnavailableFallback } from '$lib/data/responses';
+import { getRandomLlmUnavailableFallback } from '$lib/data/fallbacks';
 import type { Persona } from '$lib/types';
 
 // ---------------------------------------------------------------------------
@@ -56,21 +56,9 @@ function getClient(): Anthropic | null {
 }
 
 // ---------------------------------------------------------------------------
-// Persona context snippets (appended to the system prompt when provided)
-// ---------------------------------------------------------------------------
-const personaContext: Record<Persona, string> = {
-	recruiter:
-		'The visitor identified themselves as a recruiter. They are likely evaluating Josh as a candidate. Emphasize professional strengths, concrete accomplishments, and relevant experience. Keep the dry humor but lean toward making a compelling case.',
-	engineer:
-		'The visitor identified themselves as a fellow engineer. They are likely interested in technical depth. Go deeper on architecture, tooling, and opinions. You can assume a higher baseline of technical knowledge.',
-	curious:
-		'The visitor is just browsing out of curiosity. Keep it entertaining and personality-forward. Lead with the interesting stuff — hot takes, quirks, hobbies. Weave in career content naturally.'
-};
-
-// ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-const LLM_MODEL = 'claude-sonnet-4-20250514';
+const LLM_MODEL = 'claude-3-5-haiku-20241022'; // Haiku for cost efficiency
 const MAX_TOKENS = 350;
 const MAX_HISTORY_MESSAGES = 10; // send last N messages as context
 
@@ -94,7 +82,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	// --- Parse request ---
 	let body: {
 		message: string;
-		modelId: string;
+		voiceId: string;
 		history?: { role: string; content: string }[];
 		persona?: Persona;
 	};
@@ -104,7 +92,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 		return json({ response: 'Invalid request.', source: 'error' }, { status: 400 });
 	}
 
-	const { message, modelId, history = [], persona } = body;
+	const { message, voiceId, history = [], persona } = body;
 
 	if (!message || typeof message !== 'string') {
 		return json({ response: 'No message provided.', source: 'error' }, { status: 400 });
@@ -113,7 +101,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	// --- LLM ---
 	const client = getClient();
 	if (!client) {
-		// No API key configured — return a funny fallback pointing to pills
+		// No API key configured — return a fallback
 		return json({
 			response: getRandomLlmUnavailableFallback(),
 			source: 'llm-unavailable'
@@ -121,12 +109,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	}
 
 	try {
-		let systemPrompt = getSystemPrompt(modelId);
-
-		// Append persona context if provided
-		if (persona && personaContext[persona]) {
-			systemPrompt += `\n\nVISITOR CONTEXT:\n${personaContext[persona]}`;
-		}
+		const systemPrompt = getSystemPrompt(voiceId, persona);
 
 		// Build conversation history for the LLM (last N messages)
 		const trimmedHistory = history.slice(-MAX_HISTORY_MESSAGES).map((msg) => ({

@@ -30,15 +30,8 @@ export function generateMetadata(
 	latencyMs: number
 ): MessageMetadata {
 	switch (source) {
-		case 'prebaked':
-			return {
-				confidence: 0.97 + Math.random() * 0.029,
-				tokens: 0,
-				latency: latencyMs
-			};
 		case 'llm-stream':
 			return {
-				confidence: 0.88 + Math.random() * 0.09,
 				tokens: Math.max(1, Math.round(responseLength / 4 + (Math.random() - 0.5) * 20)),
 				latency: latencyMs
 			};
@@ -47,7 +40,6 @@ export function generateMetadata(
 		case 'rate-limit':
 		default:
 			return {
-				confidence: 0.0,
 				tokens: 0,
 				latency: latencyMs
 			};
