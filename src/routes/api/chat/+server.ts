@@ -23,7 +23,7 @@ function getClient(): Anthropic | null {
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-const LLM_MODEL = 'claude-3-5-haiku-20241022'; // Haiku for cost efficiency
+const LLM_MODEL = 'claude-haiku-4-5-20251001'; // Haiku for cost efficiency
 const MAX_TOKENS = 350;
 const MAX_HISTORY_MESSAGES = 3; // send last N messages as context (keeps input tokens low)
 const MAX_MESSAGE_LENGTH = 1000; // max characters per user message

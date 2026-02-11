@@ -5,17 +5,8 @@ import type {
 	ActionPill
 } from '$lib/types';
 import { voices, defaultVoice } from '$lib/data/models';
-import {
-	getGreeting,
-	personaLabels,
-	topicPills,
-	personaTopicOrder,
-	personaInitialFollowUps,
-	defaultFollowUps,
-	emailPillAfter,
-	aboutPillAfter
-} from '$lib/data/responses';
-import { generateMetadata, getReachOutMailtoLink } from './utils';
+import { getGreeting, personaLabels } from '$lib/data/responses';
+import { generateMetadata } from './utils';
 
 // ---------------------------------------------------------------------------
 // Callbacks — DOM interactions the state module delegates to the component
@@ -35,6 +26,25 @@ export interface ChatCallbacks {
 // ---------------------------------------------------------------------------
 const SESSION_MESSAGE_LIMIT = 20; // max user messages per session before capping
 
+// ---------------------------------------------------------------------------
+// Follow-up parsing — extracts LLM-generated pills from response text
+// ---------------------------------------------------------------------------
+const FOLLOWUPS_MARKER = '[FOLLOWUPS]';
+
+function parseFollowUps(raw: string): { content: string; followUps: string[] } {
+	const idx = raw.indexOf(FOLLOWUPS_MARKER);
+	if (idx === -1) return { content: raw.trim(), followUps: [] };
+
+	const content = raw.slice(0, idx).trim();
+	const followUpBlock = raw.slice(idx + FOLLOWUPS_MARKER.length).trim();
+	const followUps = followUpBlock
+		.split('\n')
+		.map((line) => line.trim())
+		.filter((line) => line.length > 0);
+
+	return { content, followUps };
+}
+
 export function createChatState(callbacks: ChatCallbacks) {
 	// ---- Reactive state ----
 	let selectedVoice = $state(defaultVoice);
@@ -42,15 +52,11 @@ export function createChatState(callbacks: ChatCallbacks) {
 	let inputValue = $state('');
 	let isTyping = $state(false);
 	let currentFollowUps: string[] = $state([]);
-	let visitedCategories: Set<string> = $state(new Set());
 	let lastResponseSource: string = $state('');
 	let lastUserMessage: string = $state('');
 	let selectedPersona: Persona | null = $state(null);
 	let sessionMessageCount = $state(0);
 	let sessionCapped = $state(false);
-
-	// Map from follow-up prompt text to category for pill dedup tracking
-	let followUpCategoryMap: Map<string, string> = $state(new Map());
 
 	// Map from follow-up prompt text to action metadata for special link pills
 	let followUpActionMap: Map<string, ActionPill> = $state(new Map());
@@ -60,60 +66,17 @@ export function createChatState(callbacks: ChatCallbacks) {
 	/** Whether to show the "Ask Josh Directly" email button */
 	const showAskJosh = $derived(
 		!isTyping &&
-		lastResponseSource !== '' &&
-		lastResponseSource !== 'error'
+		(sessionCapped || (lastResponseSource !== '' && lastResponseSource !== 'error'))
 	);
 
 	// ---- Internal helpers ----
 
 	/**
-	 * Pick follow-up pills from a list of category IDs.
-	 * Filters out already-visited categories and returns the next batch.
+	 * Apply parsed follow-ups from the LLM response.
 	 */
-	function pickFollowUps(categoryIds: string[], count: number = 3): string[] {
-		const available = categoryIds.filter((id) => !visitedCategories.has(id));
-		const toShow = available.length > 0 ? available.slice(0, count) : categoryIds.slice(0, count);
-
-		const result: string[] = [];
-		for (const id of toShow) {
-			const pill = topicPills[id];
-			if (pill) {
-				followUpCategoryMap.set(pill.prompt, pill.category);
-				result.push(pill.prompt);
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * Generate follow-up pills based on the current persona and last category.
-	 * Also injects action pills (email, resume link) where appropriate.
-	 */
-	function setFollowUps(category?: string) {
-		if (category) {
-			visitedCategories.add(category);
-		}
-
-		// Reset action pill map for each new set of follow-ups
+	function applyFollowUps(followUps: string[]) {
 		followUpActionMap = new Map();
-
-		const persona = selectedPersona ?? 'curious';
-		const topicOrder = personaTopicOrder[persona];
-		currentFollowUps = pickFollowUps(topicOrder);
-
-		// Inject action pills based on category + persona
-		if (category) {
-			if (emailPillAfter[persona]?.has(category)) {
-				const prompt = 'Email Josh directly';
-				followUpActionMap.set(prompt, { type: 'email', href: getReachOutMailtoLink() });
-				currentFollowUps = [...currentFollowUps, prompt];
-			}
-			if (aboutPillAfter[persona]?.has(category)) {
-				const prompt = 'Skip to his resume';
-				followUpActionMap.set(prompt, { type: 'navigate', href: '/about' });
-				currentFollowUps = [...currentFollowUps, prompt];
-			}
-		}
+		currentFollowUps = [...followUps];
 	}
 
 	// ---- Public actions ----
@@ -129,8 +92,6 @@ export function createChatState(callbacks: ChatCallbacks) {
 			}
 		];
 		currentFollowUps = [];
-		visitedCategories = new Set();
-		followUpCategoryMap = new Map();
 		followUpActionMap = new Map();
 		lastResponseSource = '';
 		lastUserMessage = '';
@@ -147,36 +108,16 @@ export function createChatState(callbacks: ChatCallbacks) {
 	 */
 	async function handlePersonaSelect(persona: Persona) {
 		selectedPersona = persona;
-
-		// Send persona label to LLM — skip automatic follow-up generation
-		await handleSend(personaLabels[persona], true);
-
-		// Set persona-specific initial follow-ups
-		const initial = personaInitialFollowUps[persona];
-		followUpCategoryMap = new Map();
-		followUpActionMap = new Map();
-		const result: string[] = [];
-		for (const id of initial) {
-			const pill = topicPills[id];
-			if (pill) {
-				followUpCategoryMap.set(pill.prompt, pill.category);
-				result.push(pill.prompt);
-			}
-		}
-		currentFollowUps = result;
+		await handleSend(personaLabels[persona]);
 	}
 
 	/**
 	 * Handle any message — pill clicks and free-text both go to the LLM.
 	 * @param text - The message text (uses inputValue if not provided)
-	 * @param skipFollowUps - If true, don't auto-generate follow-ups (used by handlePersonaSelect)
 	 */
-	async function handleSend(text?: string, skipFollowUps: boolean = false) {
+	async function handleSend(text?: string) {
 		const message = text || inputValue.trim();
 		if (!message || isTyping || sessionCapped) return;
-
-		// Check if this message matches a pill category (for visited tracking)
-		const category = followUpCategoryMap.get(message);
 
 		// Auto-assign persona if not yet chosen
 		if (!selectedPersona) {
@@ -211,10 +152,9 @@ export function createChatState(callbacks: ChatCallbacks) {
 				}
 			];
 
-			// Show only the email action pill
-			currentFollowUps = ['Email Josh directly'];
+			// Clear follow-ups — AskJoshButton handles the email CTA
+			currentFollowUps = [];
 			followUpActionMap = new Map();
-			followUpActionMap.set('Email Josh directly', { type: 'email', href: getReachOutMailtoLink() });
 
 			await callbacks.scrollToBottom();
 			return;
@@ -280,7 +220,6 @@ export function createChatState(callbacks: ChatCallbacks) {
 						metadata: generateMetadata(source, content.length, latency)
 					}
 				];
-				if (!skipFollowUps) setFollowUps(category);
 			} else if (res.headers.get('X-Response-Source') === 'llm-stream' && res.body) {
 				const streamId = crypto.randomUUID();
 				const reader = res.body.getReader();
@@ -326,16 +265,21 @@ export function createChatState(callbacks: ChatCallbacks) {
 						}
 					];
 				} else {
-					// Stream complete — attach metadata to the final message
-					const latency = Date.now() - requestStartTime;
-					messages = messages.map((m) =>
-						m.id === streamId
-							? { ...m, metadata: generateMetadata('llm-stream', m.content.length, latency) }
-							: m
-					);
+					// Stream complete — parse follow-ups from the raw response
+					const rawMsg = messages.find((m) => m.id === streamId);
+					if (rawMsg) {
+						const parsed = parseFollowUps(rawMsg.content);
+						const latency = Date.now() - requestStartTime;
+						// Update message with clean content (no follow-up marker) and metadata
+						messages = messages.map((m) =>
+							m.id === streamId
+								? { ...m, content: parsed.content, metadata: generateMetadata('llm-stream', parsed.content.length, latency) }
+								: m
+						);
+						applyFollowUps(parsed.followUps);
+					}
 				}
 				lastResponseSource = 'llm-stream';
-				if (!skipFollowUps) setFollowUps(category);
 			} else {
 				// JSON response (llm-unavailable, error, etc.)
 				const data = await res.json();
@@ -354,7 +298,6 @@ export function createChatState(callbacks: ChatCallbacks) {
 						metadata: generateMetadata(source, data.response.length, latency)
 					}
 				];
-				if (!skipFollowUps) setFollowUps(category);
 			}
 		} catch {
 			isTyping = false;
@@ -372,7 +315,6 @@ export function createChatState(callbacks: ChatCallbacks) {
 					metadata: generateMetadata('error', errorContent.length, latency)
 				}
 			];
-			if (!skipFollowUps) setFollowUps();
 		}
 
 		await callbacks.scrollToBottom();
@@ -391,7 +333,6 @@ export function createChatState(callbacks: ChatCallbacks) {
 		get isTyping() { return isTyping; },
 		get sessionCapped() { return sessionCapped; },
 		get currentFollowUps() { return currentFollowUps; },
-		get followUpCategoryMap() { return followUpCategoryMap; },
 		get followUpActionMap() { return followUpActionMap; },
 		get selectedVoice() { return selectedVoice; },
 		get selectedPersona() { return selectedPersona; },
