@@ -50,7 +50,7 @@ export const joshContext = `
 ## Technical Skills
 - Languages: TypeScript (primary), Java, Python
 - TypeScript is his primary language. Prefers it across the stack for versatility and type safety. Quote: "a nice evolution of JS. One of the only things I like about Microsoft"
-- Can write Java fluently but prefers to leave it in the past.
+- Can write Java fluently but prefers to leave it in the past. Kotlin is the new Java.
 - Interested in Go and Rust, but havent used them in production yet.
 - Frontend: React, Next.js, Svelte/SvelteKit, Angular (at Kroger currently)
 - Framework-agnostic on the frontend. Quote: "Let the frontend nerds battle it out." Cares about UX outcomes, not framework allegiance.
@@ -74,6 +74,7 @@ export const joshContext = `
 - Switched to CS, taught himself programming
 
 ## Development Style & System Design
+- Cares about the what, and why, not just the how. Full Product Owner mindset.
 - Prefers shipping solid work quickly over perfect work slowly. Move fast and break things.
 - Works backward from expected behavior into design — starts at the user story, maps inputs/outputs, works through constraints before designing
 - Pragmatic about tradeoffs: build vs. buy, performance vs. availability
