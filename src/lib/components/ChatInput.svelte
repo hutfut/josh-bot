@@ -2,10 +2,11 @@
 	interface Props {
 		inputValue: string;
 		isTyping: boolean;
+		disabled?: boolean;
 		onSend: () => void;
 	}
 
-	let { inputValue = $bindable(), isTyping, onSend }: Props = $props();
+	let { inputValue = $bindable(), isTyping, disabled = false, onSend }: Props = $props();
 
 	let textareaEl: HTMLTextAreaElement | undefined = $state();
 
@@ -39,13 +40,14 @@
 				bind:value={inputValue}
 				onkeydown={handleKeydown}
 				oninput={handleInput}
-				placeholder="Ask about Josh..."
+				placeholder={disabled ? 'Session limit reached' : 'Ask about Josh...'}
 				rows={1}
-				class="flex-1 bg-transparent px-4 py-3 text-white placeholder-gray-500 resize-none focus:outline-none text-sm leading-relaxed max-h-32"
+				{disabled}
+				class="flex-1 bg-transparent px-4 py-3 text-white placeholder-gray-500 resize-none focus:outline-none text-sm leading-relaxed max-h-32 disabled:opacity-40"
 			></textarea>
 			<button
 				onclick={onSend}
-				disabled={!inputValue.trim() || isTyping}
+				disabled={!inputValue.trim() || isTyping || disabled}
 				aria-label="Send message"
 				class="p-3 rounded-xl bg-violet-600 text-white hover:bg-violet-500 disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:bg-violet-600 transition-all duration-200 flex-shrink-0"
 			>

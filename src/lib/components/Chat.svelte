@@ -96,6 +96,7 @@
 		bind:this={chatInput}
 		bind:inputValue={chat.inputValue}
 		isTyping={chat.isTyping}
+		disabled={chat.sessionCapped}
 		onSend={() => chat.handleSend()}
 	/>
 </section>

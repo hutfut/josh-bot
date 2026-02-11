@@ -4,43 +4,8 @@ import Anthropic from '@anthropic-ai/sdk';
 import { env } from '$env/dynamic/private';
 import { getSystemPrompt } from '$lib/server/prompts';
 import { getRandomLlmUnavailableFallback } from '$lib/data/fallbacks';
+import { checkRateLimit } from '$lib/server/ratelimit';
 import type { Persona } from '$lib/types';
-
-// ---------------------------------------------------------------------------
-// Rate limiting (in-memory, per-IP, resets on server restart)
-// ---------------------------------------------------------------------------
-const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
-const RATE_LIMIT_MAX_REQUESTS = 20; // max requests per window
-
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-
-let lastCleanup = Date.now();
-const CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
-
-function cleanupStaleEntries(): void {
-	const now = Date.now();
-	if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
-	lastCleanup = now;
-	for (const [ip, entry] of rateLimitMap) {
-		if (now > entry.resetAt) {
-			rateLimitMap.delete(ip);
-		}
-	}
-}
-
-function isRateLimited(ip: string): boolean {
-	cleanupStaleEntries();
-	const now = Date.now();
-	const entry = rateLimitMap.get(ip);
-
-	if (!entry || now > entry.resetAt) {
-		rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-		return false;
-	}
-
-	entry.count++;
-	return entry.count > RATE_LIMIT_MAX_REQUESTS;
-}
 
 // ---------------------------------------------------------------------------
 // Anthropic client (lazy — only created if API key exists)
@@ -60,7 +25,8 @@ function getClient(): Anthropic | null {
 // ---------------------------------------------------------------------------
 const LLM_MODEL = 'claude-3-5-haiku-20241022'; // Haiku for cost efficiency
 const MAX_TOKENS = 350;
-const MAX_HISTORY_MESSAGES = 10; // send last N messages as context
+const MAX_HISTORY_MESSAGES = 3; // send last N messages as context (keeps input tokens low)
+const MAX_MESSAGE_LENGTH = 1000; // max characters per user message
 
 // ---------------------------------------------------------------------------
 // POST /api/chat
@@ -68,15 +34,14 @@ const MAX_HISTORY_MESSAGES = 10; // send last N messages as context
 export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	// --- Rate limiting ---
 	const ip = getClientAddress();
-	if (isRateLimited(ip)) {
-		return json(
-			{
-				response:
-					"You're sending messages faster than Josh can type, which is saying something. Slow down and try again in a minute.",
-				source: 'rate-limit'
-			},
-			{ status: 429 }
-		);
+	const rateCheck = await checkRateLimit(ip);
+
+	if (rateCheck.limited) {
+		const response =
+			rateCheck.tier === 'day'
+				? "You've hit your daily limit. Josh is flattered by the attention, but come back tomorrow — or just email him directly."
+				: "You're sending messages faster than Josh can type, which is saying something. Slow down and try again in a minute.";
+		return json({ response, source: 'rate-limit' }, { status: 429 });
 	}
 
 	// --- Parse request ---
@@ -96,6 +61,17 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 
 	if (!message || typeof message !== 'string') {
 		return json({ response: 'No message provided.', source: 'error' }, { status: 400 });
+	}
+
+	// --- Input length validation ---
+	if (message.length > MAX_MESSAGE_LENGTH) {
+		return json(
+			{
+				response: `That message is ${message.length} characters. I have a ${MAX_MESSAGE_LENGTH}-character limit — I'm a portfolio chatbot, not a therapist.`,
+				source: 'error'
+			},
+			{ status: 400 }
+		);
 	}
 
 	// --- LLM ---

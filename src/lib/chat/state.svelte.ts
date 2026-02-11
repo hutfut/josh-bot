@@ -30,6 +30,11 @@ export interface ChatCallbacks {
 // createChatState — reactive chat state + all business logic
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Session config
+// ---------------------------------------------------------------------------
+const SESSION_MESSAGE_LIMIT = 20; // max user messages per session before capping
+
 export function createChatState(callbacks: ChatCallbacks) {
 	// ---- Reactive state ----
 	let selectedVoice = $state(defaultVoice);
@@ -41,6 +46,8 @@ export function createChatState(callbacks: ChatCallbacks) {
 	let lastResponseSource: string = $state('');
 	let lastUserMessage: string = $state('');
 	let selectedPersona: Persona | null = $state(null);
+	let sessionMessageCount = $state(0);
+	let sessionCapped = $state(false);
 
 	// Map from follow-up prompt text to category for pill dedup tracking
 	let followUpCategoryMap: Map<string, string> = $state(new Map());
@@ -130,6 +137,8 @@ export function createChatState(callbacks: ChatCallbacks) {
 		selectedPersona = null;
 		isTyping = false;
 		inputValue = '';
+		sessionMessageCount = 0;
+		sessionCapped = false;
 	}
 
 	/**
@@ -164,7 +173,7 @@ export function createChatState(callbacks: ChatCallbacks) {
 	 */
 	async function handleSend(text?: string, skipFollowUps: boolean = false) {
 		const message = text || inputValue.trim();
-		if (!message || isTyping) return;
+		if (!message || isTyping || sessionCapped) return;
 
 		// Check if this message matches a pill category (for visited tracking)
 		const category = followUpCategoryMap.get(message);
@@ -172,6 +181,43 @@ export function createChatState(callbacks: ChatCallbacks) {
 		// Auto-assign persona if not yet chosen
 		if (!selectedPersona) {
 			selectedPersona = 'curious';
+		}
+
+		// Track session message count and enforce cap
+		sessionMessageCount++;
+		if (sessionMessageCount > SESSION_MESSAGE_LIMIT) {
+			sessionCapped = true;
+			inputValue = '';
+
+			// Add the user message so they see what they typed
+			messages = [
+				...messages,
+				{
+					id: crypto.randomUUID(),
+					role: 'user',
+					content: message,
+					timestamp: Date.now()
+				}
+			];
+
+			// Show session-ended message with email CTA
+			messages = [
+				...messages,
+				{
+					id: crypto.randomUUID(),
+					role: 'assistant',
+					content: "You've used your session allocation — which means you're either genuinely interested or stress-testing my limits. Either way, the best next step is talking to the real Josh. He's friendlier than me and has fewer token constraints.",
+					timestamp: Date.now()
+				}
+			];
+
+			// Show only the email action pill
+			currentFollowUps = ['Email Josh directly'];
+			followUpActionMap = new Map();
+			followUpActionMap.set('Email Josh directly', { type: 'email', href: getReachOutMailtoLink() });
+
+			await callbacks.scrollToBottom();
+			return;
 		}
 
 		// Clear follow-ups while waiting for response
@@ -343,6 +389,7 @@ export function createChatState(callbacks: ChatCallbacks) {
 		// Reactive state (read)
 		get messages() { return messages; },
 		get isTyping() { return isTyping; },
+		get sessionCapped() { return sessionCapped; },
 		get currentFollowUps() { return currentFollowUps; },
 		get followUpCategoryMap() { return followUpCategoryMap; },
 		get followUpActionMap() { return followUpActionMap; },
