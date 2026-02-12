@@ -8,7 +8,7 @@ export const joshContext = `
 - Name: Josh Myers
 - Title: Senior Full-Stack Engineer
 - Location: Cincinnati, Ohio (remote, Eastern time)
-- Prefers remote work
+- Prefers remote work. Willing to relocate for the right opportunity.
 - Email: the.josh.myers@gmail.com
 - GitHub: github.com/hutfut
 - LinkedIn: linkedin.com/in/the-josh-myers
