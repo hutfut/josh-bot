@@ -18,8 +18,8 @@ export const joshContext = `
 - Domains: SaaS, healthcare, eCommerce
 - Values craft, judgment, and ownership
 - Reliable and communicative
-- Has worked in both a Series B startup and a Fortune 25 company. Feels more at home in the startup environment.
-- Interested in roles which emphasize end-to-end ownership, cross functional skills.
+- Has worked in both a Series B startup (VNDLY) and a Fortune 25 company (Kroger). Feels more at home in the startup environment.
+- Interested in roles which emphasize end-to-end ownership, cross functional skills, wearing many hats.
 - Current target title is "Product Engineer" or "Senior Software Engineer"
 
 
@@ -32,6 +32,11 @@ export const joshContext = `
 - Org culture is slow-moving and resistant to change; part of why he's looking for something new
 - Returned to Kroger after VNDLY for a greenfield project with a leadership opportunity; it didn't pan out as expected
 
+## Sabatical (2021-2024)
+- Travel to Tokyo, West Coast USA (California, Colorado, New Mexico)
+- Fell in love with cooking
+- Work on passion projects: video games design and development in Unity and Godot
+
 ## VNDLY / Workday (2019–2021)
 - Full-stack engineer at VNDLY, a workforce management SaaS startup. Work started shortly after Series B funding through the acquisition by Workday.
 - Built billing abstractions: prorations, tiered pricing, client-specific rules
@@ -40,21 +45,22 @@ export const joshContext = `
 - Workday acquired VNDLY in 2021; Josh stayed for the transition, then moved on
 
 ## Kroger — eCommerce (2014–2019)
-- Backend services in Java and Spring Boot serving personalized product recommendations and promotions
+- High throughput Backend services in Java and Spring Boot serving personalized product recommendations and promotions
 - Data-loader pipelines with asynchronous writes — Cassandra for storage, Kafka for eventing, millions of events per day
 - Learned to design for failure early: quote — "You need recovery mechanisms. You do not want your stuff just falling on the ground."
-- Led the Microservices Guild — Pushed for shared enterprise libraries, unified API contracts, conducted like a user group
+- Led the Microservices Guild — Pushed for shared enterprise libraries, unified API contracts. conducted the Guild like a user group
 - Spearheaded an initiative to standardize analytic event schemas across the org
 
 
 ## Technical Skills
 - Languages: TypeScript (primary), Java, Python
-- TypeScript is his primary language. Prefers it across the stack for versatility and type safety. Quote: "a nice evolution of JS. One of the only things I like about Microsoft"
+- TypeScript is his primary language. Prefers it across the stack for versatility and type safety. Quote: "A nice evolution of JS. One of the only things I like about Microsoft"
 - Can write Java fluently but prefers to leave it in the past. Kotlin is the new Java.
+- Overall experience leans back end, roughly a 70/30 split back end and front end (back end favored)
 - Interested in Go and Rust, but havent used them in production yet.
 - Frontend: React, Next.js, Svelte/SvelteKit, Angular (at Kroger currently)
 - Framework-agnostic on the frontend. Quote: "Let the frontend nerds battle it out." Cares about UX outcomes, not framework allegiance.
-- Backend: NestJS, Spring Boot, Django
+- Backend: Node Runtimes, NestJS, Spring Boot, Django
 - Data/Events: PostgreSQL, Kafka, Cassandra, event-driven architectures. Prefers event-driven patterns.
 - Infrastructure: AWS (S3, ECS, Lambda, RDS), Docker, Terraform, Cloudflare Workers
 - Cloud-native advocate
@@ -82,9 +88,9 @@ export const joshContext = `
 
 ## Leadership & Mentoring
 - Senior IC, not a manager. Focuses on making people and code around him better.
+- Speaks up in meetings; asks questions others don't.
 - Once inherited a Node app that was one continuous callback chain — no async/await, no separation of concerns. Walked the team through the pattern, restructured the approach, made it maintainable.
 - In code reviews, focuses on testing over style. If the tests are solid, implementation details are a conversation, not a blocker.
-- Speaks up in meetings; asks questions others don't.
 
 ## Strong Opinions / Hot Takes
 - Most companies using microservices would be better off with a well-structured monolith
