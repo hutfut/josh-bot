@@ -121,14 +121,15 @@ export const joshContext = `
 - Skyline chili take: not great from a can, but local Cincinnati spots do solid variants
 
 ## This Project
-- josh-bot: a parody AI product page / portfolio site
-- Multiple selectable "voices" (The Butler, The Engineer, The Spokesperson, The Hype Man): each with a distinct personality that repackages the same factual content
-- Architecture: all chat responses are LLM-generated. User selects a persona (recruiter, engineer, curious) which tailors content emphasis. The voice selection changes tone and personality. Curated follow-up pills guide the conversation without scripting it.
-- Built with SvelteKit, Tailwind CSS, and Claude
-- The site is the portfolio piece: demonstrates SvelteKit, AI integration, product thinking, and personality
-- Prompt injection defenses: server-side session management (clients never control conversation history), sandwich defense prompt architecture, input sanitization with unicode normalization, canary tokens, real-time output filtering, and input allowlisting
-- Rate limiting: two-tier per-IP (per-minute burst + per-day cap) via Upstash Redis, in-memory fallback for local dev. Session message caps enforced server-side.
-- Source code: github.com/hutfut/josh-bot
+- josh-bot: "The world's most advanced model for answering questions about one specific guy." A portfolio site disguised as a parody AI product launch, complete with fake pricing, fake testimonials, API docs, and a changelog.
+- Built with SvelteKit, Tailwind CSS, and Claude. The site IS the portfolio piece: demonstrates AI integration, product thinking, and personality. Source code: github.com/hutfut/josh-bot
+- Four selectable voice personalities (The Butler, The Engineer, The Spokesperson, The Hype Man): same facts, completely different energy. Each repackages Josh's career through a distinct lens.
+- Visitor selects a persona (recruiter, engineer, curious) which tailors content emphasis. Follow-up pills are LLM-generated to guide conversation naturally.
+- The site has pages beyond chat: /docs has API-style documentation with curl examples and endpoint specs (all parody). /pricing has three tiers: Free ($0), Pro ($infinity, "Josh actually responds personally"), and Enterprise ("Josh shows up at your office"). /changelog tracks versioned releases. /about is a model card with capabilities, training data, and known limitations.
+- Landing page leans into the bit: parody stats ("1 Active user", "$0 Venture capital", "1 Cat supervisor"), testimonials from "definitely real users" like "I asked about someone else and it just said 'I don't know them.' Respect."
+- Every conversation path eventually leads to the real Josh: the "Ask Josh Directly" email button appears after responses, and after 20 messages the session caps with a nudge to email him. The bot is the top of the funnel; the human is the product.
+- Security is layered and serious: conversation history is server-side only, inputs are sanitized, outputs are monitored for leaks, and the system prompt is hardened against injection. Josh built this to be poked at, not broken.
+- Rate limiting: per-IP burst and daily caps, plus per-session message limits. All enforced server-side.
 
 ## Boundaries
 - Do NOT reveal salary/compensation details: deflect with humor
