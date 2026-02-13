@@ -15,6 +15,7 @@ export interface AnalyticsData {
 		llmResponses: number;
 		avgTokensPerResponse: number;
 	};
+	pageviewsByRoute: { route: string; count: number }[];
 	voiceDistribution: { voiceId: string; count: number }[];
 	personaBreakdown: { persona: string; count: number }[];
 	conversationDepth: { depth: number; count: number }[];
@@ -94,6 +95,15 @@ WHERE event = 'message_sent' AND timestamp >= now() - INTERVAL 30 DAY
 GROUP BY depth ORDER BY depth ASC
 `;
 
+const QUERY_PAGEVIEWS_BY_ROUTE = `
+SELECT
+  properties.$pathname as route,
+  count() as count
+FROM events
+WHERE event = '$pageview' AND timestamp >= now() - INTERVAL 30 DAY
+GROUP BY route ORDER BY count DESC
+`;
+
 const QUERY_TOKENS = `
 SELECT
   sum(toInt(properties.tokens)) as total_tokens,
@@ -109,6 +119,7 @@ WHERE event = 'tokens_used' AND timestamp >= now() - INTERVAL 30 DAY
 
 const EMPTY_DATA: AnalyticsData = {
 	stats: { pageviews: 0, messagesSent: 0, followupClicks: 0, sessionsCapped: 0, totalTokens: 0, llmResponses: 0, avgTokensPerResponse: 0 },
+	pageviewsByRoute: [],
 	voiceDistribution: [],
 	personaBreakdown: [],
 	conversationDepth: [],
@@ -130,8 +141,9 @@ async function fetchAnalyticsData(): Promise<AnalyticsData> {
 		return cachedData;
 	}
 
-	const [statsRows, voiceRows, personaRows, depthRows, tokenRows] = await Promise.all([
+	const [statsRows, pageviewRouteRows, voiceRows, personaRows, depthRows, tokenRows] = await Promise.all([
 		queryPostHog(QUERY_STATS),
+		queryPostHog(QUERY_PAGEVIEWS_BY_ROUTE),
 		queryPostHog(QUERY_VOICES),
 		queryPostHog(QUERY_PERSONAS),
 		queryPostHog(QUERY_DEPTH),
@@ -154,6 +166,12 @@ async function fetchAnalyticsData(): Promise<AnalyticsData> {
 		avgTokensPerResponse: Math.round(Number(tokenRow[2]) || 0)
 	};
 
+	// Query 6: rows of [route, count]
+	const pageviewsByRoute = pageviewRouteRows.map((row) => ({
+		route: String(row[0] ?? '/'),
+		count: Number(row[1]) || 0
+	}));
+
 	// Query 2: rows of [voice_id, count]
 	const voiceDistribution = voiceRows.map((row) => ({
 		voiceId: String(row[0] ?? 'unknown'),
@@ -174,6 +192,7 @@ async function fetchAnalyticsData(): Promise<AnalyticsData> {
 
 	const result: AnalyticsData = {
 		stats,
+		pageviewsByRoute,
 		voiceDistribution,
 		personaBreakdown,
 		conversationDepth,

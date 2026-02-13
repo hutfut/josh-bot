@@ -84,9 +84,66 @@
 	// Chart instances bound via $effect
 	// ---------------------------------------------------------------------------
 
+	let pageviewsCanvas: HTMLCanvasElement = $state(null!);
 	let voiceCanvas: HTMLCanvasElement = $state(null!);
 	let personaCanvas: HTMLCanvasElement = $state(null!);
 	let depthCanvas: HTMLCanvasElement = $state(null!);
+
+	// -- Pageviews by route horizontal bar chart --
+
+	$effect(() => {
+		if (!pageviewsCanvas || !data.available || data.pageviewsByRoute.length === 0) return;
+
+		const chart = new Chart(pageviewsCanvas, {
+			type: 'bar',
+			data: {
+				labels: data.pageviewsByRoute.map((d) => d.route || '/'),
+				datasets: [{
+					label: 'Pageviews',
+					data: data.pageviewsByRoute.map((d) => d.count),
+					backgroundColor: data.pageviewsByRoute.map((_, i, arr) => {
+						const opacity = 0.8 - (i / arr.length) * 0.4;
+						return `rgba(139, 92, 246, ${opacity})`;
+					}),
+					borderColor: 'rgba(139, 92, 246, 1)',
+					borderWidth: 1,
+					borderRadius: 4,
+					borderSkipped: false
+				}]
+			},
+			options: {
+				indexAxis: 'y',
+				responsive: true,
+				maintainAspectRatio: false,
+				scales: {
+					x: {
+						ticks: { color: 'rgba(156, 163, 175, 1)', font: { size: 12 }, precision: 0 },
+						grid: { color: 'rgba(255, 255, 255, 0.04)' },
+						border: { display: false }
+					},
+					y: {
+						ticks: { color: 'rgba(156, 163, 175, 1)', font: { size: 13 } },
+						grid: { display: false },
+						border: { display: false }
+					}
+				},
+				plugins: {
+					legend: { display: false },
+					tooltip: {
+						backgroundColor: 'rgba(15, 15, 25, 0.95)',
+						titleColor: '#fff',
+						bodyColor: 'rgba(156, 163, 175, 1)',
+						borderColor: 'rgba(255, 255, 255, 0.08)',
+						borderWidth: 1
+					}
+				}
+			}
+		});
+
+		return () => chart.destroy();
+	});
+
+	// -- Voice doughnut chart --
 
 	$effect(() => {
 		if (!voiceCanvas || !data.available || data.voiceDistribution.length === 0) return;
@@ -298,6 +355,19 @@
 					<p class="text-3xl font-bold text-white">${estimatedCost < 0.01 ? '<0.01' : estimatedCost.toFixed(2)}</p>
 					<p class="text-[10px] text-gray-600 mt-1">Haiku 4.5 @ $5/M output tokens</p>
 				</div>
+			</div>
+
+			<!-- Pageviews by route -->
+			<div class="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6 mb-12 animate-fade-in" style="animation-delay: 0.18s;">
+				<h3 class="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-6">Pageviews by Route</h3>
+				<p class="text-xs text-gray-500 mb-4">Which pages are visitors actually looking at?</p>
+				{#if data.pageviewsByRoute.length > 0}
+					<div style="height: {Math.max(200, data.pageviewsByRoute.length * 36)}px;">
+						<canvas bind:this={pageviewsCanvas}></canvas>
+					</div>
+				{:else}
+					<p class="text-gray-600 text-sm text-center py-8">No pageview data yet.</p>
+				{/if}
 			</div>
 
 			<!-- Doughnut charts: voice + persona side by side -->
