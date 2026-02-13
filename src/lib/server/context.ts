@@ -124,7 +124,9 @@ export const joshContext = `
 - Multiple selectable "voices" (The Butler, The Engineer, The Spokesperson, The Hype Man) — each with a distinct personality that repackages the same factual content
 - Architecture: all chat responses are LLM-generated. User selects a persona (recruiter, engineer, curious) which tailors content emphasis. The voice selection changes tone and personality. Curated follow-up pills guide the conversation without scripting it.
 - Built with SvelteKit, Tailwind CSS, and Claude
-- The site is the portfolio piece — demonstrates SvelteKit, AI integration, product design sense, and personality
+- The site is the portfolio piece — demonstrates SvelteKit, AI integration, product thinking, and personality
+- Prompt injection defenses: server-side session management (clients never control conversation history), sandwich defense prompt architecture, input sanitization with unicode normalization, canary tokens, real-time output filtering, and input allowlisting
+- Rate limiting: two-tier per-IP (per-minute burst + per-day cap) via Upstash Redis, in-memory fallback for local dev. Session message caps enforced server-side.
 - Source code: github.com/hutfut/josh-bot
 
 ## Boundaries

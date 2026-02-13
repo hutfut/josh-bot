@@ -55,6 +55,7 @@ export function createChatState(callbacks: ChatCallbacks) {
 	let lastResponseSource: string = $state('');
 	let lastUserMessage: string = $state('');
 	let selectedPersona: Persona | null = $state(null);
+	let sessionId: string | null = $state(null);
 	let sessionMessageCount = $state(0);
 	let sessionCapped = $state(false);
 
@@ -96,6 +97,7 @@ export function createChatState(callbacks: ChatCallbacks) {
 		lastResponseSource = '';
 		lastUserMessage = '';
 		selectedPersona = null;
+		sessionId = null;
 		isTyping = false;
 		inputValue = '';
 		sessionMessageCount = 0;
@@ -185,22 +187,20 @@ export function createChatState(callbacks: ChatCallbacks) {
 		const requestStartTime = Date.now();
 
 		try {
-			// Build conversation history for the API
-			const history = messages
-				.filter((m) => m.role === 'user' || m.role === 'assistant')
-				.slice(0, -1)
-				.map((m) => ({ role: m.role, content: m.content }));
-
 			const res = await fetch('/api/chat', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					message,
 					voiceId: selectedVoice.id,
-					history,
+					sessionId,
 					persona: selectedPersona
 				})
 			});
+
+			// Store server-assigned session ID
+			const newSessionId = res.headers.get('X-Session-Id');
+			if (newSessionId) sessionId = newSessionId;
 
 			if (!res.ok) {
 				const data = await res.json().catch(() => ({}));
