@@ -11,6 +11,7 @@
 - **`src/lib/`** (non-server) – Shared types, components, and client-safe logic. Chat state and stream consumption live in `lib/chat/`.
 - **`src/lib/components/VoiceCards.svelte`** – Initial voice selection as a 2x2/4-col card grid (shown pre-conversation).
 - **`src/lib/components/VoiceBar.svelte`** – Compact sticky voice pill bar (shown during active conversation).
+- **`src/lib/analytics.ts`** – Client-only PostHog wrapper (`initPostHog`, `track`). Must not be imported from `src/lib/server/`.
 - **`src/lib/data/`** – Static content: voice definitions, greetings, fallbacks, changelog. Add copy or new voices here; prompt text and personality live in `lib/server/prompts.ts`.
 
 ---
@@ -22,6 +23,7 @@
 - **Voice switching:** Voice can be switched mid-conversation without reset. The per-request `voiceId` is used for prompt generation, not the session's stored value. Each assistant message records the `voiceName` that generated it.
 - **Types:** Shared types in `$lib/types` (e.g. `Persona`, `ResponseSource`, `ChatMessage`, `ActionPill`). Use these instead of ad-hoc shapes.
 - **API responses:** Chat API returns `{ response: string, source: ResponseSource }` (and sometimes `followUps`). Error/rate-limit responses use the same shape with a human-readable `response` and appropriate `source`.
+- **Analytics:** All events go through the `track()` wrapper in `lib/analytics.ts`. Do not call `posthog` directly from components.
 
 ---
 

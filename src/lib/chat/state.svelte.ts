@@ -7,6 +7,7 @@ import type {
 import { voices, defaultVoice } from '$lib/data/models';
 import { getGreeting, personaLabels } from '$lib/data/responses';
 import { generateMetadata } from './utils';
+import { track } from '$lib/analytics';
 
 // ---------------------------------------------------------------------------
 // Callbacks: DOM interactions the state module delegates to the component
@@ -112,6 +113,7 @@ export function createChatState(callbacks: ChatCallbacks) {
 	 */
 	async function handlePersonaSelect(persona: Persona) {
 		selectedPersona = persona;
+		track('persona_selected', { persona });
 		await handleSend(personaLabels[persona]);
 	}
 
@@ -128,10 +130,31 @@ export function createChatState(callbacks: ChatCallbacks) {
 			selectedPersona = 'curious';
 		}
 
+		// Track follow-up pill clicks (text param means it came from a pill)
+		if (text) {
+			track('followup_clicked', {
+				voiceId: selectedVoice.id,
+				persona: selectedPersona,
+				pillText: text
+			});
+		}
+
 		// Track session message count and enforce cap
 		sessionMessageCount++;
+		track('message_sent', {
+			voiceId: selectedVoice.id,
+			persona: selectedPersona,
+			messageNumber: sessionMessageCount,
+			isFollowUp: !!text
+		});
+
 		if (sessionMessageCount > SESSION_MESSAGE_LIMIT) {
 			sessionCapped = true;
+			track('session_capped', {
+				voiceId: selectedVoice.id,
+				persona: selectedPersona,
+				messageCount: sessionMessageCount
+			});
 			inputValue = '';
 
 			// Add the user message so they see what they typed
@@ -278,17 +301,24 @@ export function createChatState(callbacks: ChatCallbacks) {
 							voiceId: selectedVoice.id
 						}
 					];
-				} else {
-					// Stream complete: extract follow-ups from raw buffer and add metadata
-					const parsed = parseFollowUps(streamBuffer);
-					const latency = Date.now() - requestStartTime;
-					applyFollowUps(parsed.followUps);
-					messages = messages.map((m) =>
-						m.id === streamId
-							? { ...m, content: parsed.content, metadata: generateMetadata('llm-stream', parsed.content.length, latency) }
-							: m
-					);
-				}
+			} else {
+				// Stream complete: extract follow-ups from raw buffer and add metadata
+				const parsed = parseFollowUps(streamBuffer);
+				const latency = Date.now() - requestStartTime;
+				const metadata = generateMetadata('llm-stream', parsed.content.length, latency);
+				applyFollowUps(parsed.followUps);
+				messages = messages.map((m) =>
+					m.id === streamId
+						? { ...m, content: parsed.content, metadata }
+						: m
+				);
+				track('tokens_used', {
+					voiceId: selectedVoice.id,
+					persona: selectedPersona,
+					tokens: metadata.tokens,
+					latency: metadata.latency
+				});
+			}
 				lastResponseSource = 'llm-stream';
 			} else {
 				// JSON response (llm-unavailable, error, etc.)
@@ -336,6 +366,7 @@ export function createChatState(callbacks: ChatCallbacks) {
 
 	function handleVoiceChange(voice: typeof defaultVoice) {
 		selectedVoice = voice;
+		track('voice_selected', { voiceId: voice.id });
 		// Pre-conversation: rewrite the greeting to match the new voice
 		if (messages.length <= 1) {
 			initChat();

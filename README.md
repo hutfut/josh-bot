@@ -51,7 +51,10 @@ Multiple independent layers to reduce the attack surface for prompt injection an
 | LLM | Anthropic Claude API (streaming) |
 | Rate Limiting | Upstash Redis: two-tier per-IP (10/min, 100/day) |
 | Sessions | In-memory server-side store (Redis-swappable) |
+| Analytics | PostHog (product analytics, event tracking) |
 | Deployment | Vercel, serverless, Node 22.x runtime |
+
+Client-side product analytics via PostHog track voice selection, persona choice, conversation depth, and follow-up pill clicks. No PII is collected; only behavioral metadata.
 
 No database. All content is version-controlled TypeScript. Rate limiting and session state are the only stateful components.
 
@@ -72,6 +75,7 @@ npm run dev:live   # live mode: uses real LLM and rate limiter (requires API key
 | `ANTHROPIC_API_KEY` | Yes (live) | Enables chat functionality |
 | `UPSTASH_REDIS_REST_URL` | No | Production rate limiting |
 | `UPSTASH_REDIS_REST_TOKEN` | No | Production rate limiting |
+| `PUBLIC_POSTHOG_KEY` | No | PostHog project API key (enables analytics) |
 | `SKIP_EXTERNAL` | No | Set to `true` to bypass LLM and rate limiting (set via `.env.offline`, loaded by `npm run dev`) |
 
 Rate limiting falls back to an in-memory implementation when Upstash credentials are not provided. Session storage is in-memory in all environments.
