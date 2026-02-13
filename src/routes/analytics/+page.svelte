@@ -282,6 +282,20 @@
 		name="description"
 		content="Real usage data for josh-bot: voice distribution, conversation depth, and follow-up engagement."
 	/>
+	{#if data.ogImageUrl}
+		<meta property="og:title" content="Usage Analytics | josh-bot" />
+		<meta
+			property="og:description"
+			content="Real usage data: voice distribution, conversation depth, and follow-up engagement."
+		/>
+		<meta property="og:image" content={data.ogImageUrl} />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:type" content="website" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="Usage Analytics | josh-bot" />
+		<meta name="twitter:image" content={data.ogImageUrl} />
+	{/if}
 </svelte:head>
 
 <div class="min-h-screen bg-surface">

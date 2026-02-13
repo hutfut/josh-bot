@@ -24,9 +24,11 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
+    "@resvg/resvg-js": "^2.6.2",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.36.2",
     "chart.js": "^4.5.1",
-    "posthog-js": "^1.347.2"
+    "posthog-js": "^1.347.2",
+    "satori": "^0.19.2"
   }
 }
