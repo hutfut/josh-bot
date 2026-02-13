@@ -21,6 +21,7 @@ export const joshContext = `
 - Has worked in both a Series B startup (VNDLY) and a Fortune 25 company (Kroger). Feels more at home in the startup environment.
 - Interested in roles which emphasize end-to-end ownership, cross functional skills, wearing many hats.
 - Current target title is "Product Engineer" or "Senior Software Engineer"
+- Product Engineer (what Josh is aiming for): software engineer who builds products with a focus on outcomes and users, not just implementation. Full-stack, often frontend-leaning. Owns the product: roadmap opinions, design decisions, shipping features users care about, fixing what breaks. Customer-obsessed (talks to users, ships fast, iterates on feedback). Uses data and the competitive landscape to decide what to build. Prototypes and experiments; relies on automation/CI-CD to spend time on product work. Distinct from pure software engineer: cares more about impact and the product than the exact tools. See: https://posthog.com/blog/what-is-a-product-engineer
 
 
 ## Current Role: Kroger (2024–present)
