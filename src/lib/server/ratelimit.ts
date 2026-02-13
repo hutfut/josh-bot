@@ -1,11 +1,11 @@
 /**
- * Rate limiting — durable (Upstash Redis) in production, in-memory for local dev.
+ * Rate limiting: durable (Upstash Redis) in production, in-memory for local dev.
  *
  * Two server-side tiers (both per-IP):
  *   - Per-minute:  10 requests / 60s sliding window (burst control)
  *   - Per-day:    100 requests / 24h sliding window (abuse prevention)
  *
- * A third tier — ~20 messages per session — is enforced client-side in state.svelte.ts.
+ * A third tier (~20 messages per session) is enforced client-side in state.svelte.ts.
  *
  * If UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are set, uses Upstash.
  * Otherwise falls back to a simple in-memory counter (single-process only).
@@ -83,7 +83,7 @@ async function checkUpstash(ip: string): Promise<RateLimitResult> {
 }
 
 // ---------------------------------------------------------------------------
-// In-memory fallback (local dev only — resets on restart, single process)
+// In-memory fallback (local dev only: resets on restart, single process)
 // ---------------------------------------------------------------------------
 const memoryMap = new Map<string, { count: number; resetAt: number }>();
 const memoryDayMap = new Map<string, { count: number; resetAt: number }>();

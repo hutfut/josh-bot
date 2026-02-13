@@ -6,9 +6,9 @@ An interactive portfolio site built as a parody AI product page. A chatbot answe
 
 Responses are generated server-side via the Anthropic Claude API and streamed to the client in real time. The system prompt is composed from three layers:
 
-1. **Knowledge base** — factual context about my career, skills, and background (maintained as a TypeScript module)
-2. **Voice personality** — per-voice prompt that controls tone and style
-3. **Persona context** — adjusts content emphasis based on the selected audience (recruiter, engineer, general)
+1. **Knowledge base**: factual context about my career, skills, and background (maintained as a TypeScript module)
+2. **Voice personality**: per-voice prompt that controls tone and style
+3. **Persona context**: adjusts content emphasis based on the selected audience (recruiter, engineer, general)
 
 Follow-up suggestions are extracted from LLM output to guide conversation contextually.
 
@@ -25,19 +25,19 @@ Follow-up suggestions are extracted from LLM output to guide conversation contex
 
 Multiple independent layers to reduce the attack surface for prompt injection and jailbreaking.
 
-**Server-side sessions** — Conversation history is stored server-side, keyed by session token. The client sends a session ID and the current message, never the history array. Prevents fabricated conversation history.
+**Server-side sessions**: Conversation history is stored server-side, keyed by session token. The client sends a session ID and the current message, never the history array. Prevents fabricated conversation history.
 
-**Sandwich defense prompt** — Security directives placed at the start and end of the system prompt. Personality and factual context sit in the middle.
+**Sandwich defense prompt**: Security directives placed at the start and end of the system prompt. Personality and factual context sit in the middle.
 
-**Input sanitization** — Messages scanned against regex patterns for known injection techniques (instruction overrides, role/delimiter injection, prompt extraction, etc.). Unicode-normalized (NFKC) to handle homoglyph attacks. Flagged inputs are logged.
+**Input sanitization**: Messages scanned against regex patterns for known injection techniques (instruction overrides, role/delimiter injection, prompt extraction, etc.). Unicode-normalized (NFKC) to handle homoglyph attacks. Flagged inputs are logged.
 
-**Canary tokens & output filtering** — A canary identifier is embedded in the system prompt. Streamed output is checked against the canary and known prompt fragments in real time. Detected leaks kill the stream.
+**Canary tokens & output filtering**: A canary identifier is embedded in the system prompt. Streamed output is checked against the canary and known prompt fragments in real time. Detected leaks kill the stream.
 
-**Input allowlisting** — `voiceId` and `persona` validated against `Set`-based allowlists. Invalid values fall back to defaults.
+**Input allowlisting**: `voiceId` and `persona` validated against `Set`-based allowlists. Invalid values fall back to defaults.
 
-**Server-side session caps** — The per-session message limit is enforced in a session store
+**Server-side session caps**: The per-session message limit is enforced in a session store
 
-**Rate limiting** — Two-tier per-IP (10/min, 100/day) via Upstash Redis, with in-memory fallback for local dev.
+**Rate limiting**: Two-tier per-IP (10/min, 100/day) via Upstash Redis, with in-memory fallback for local dev.
 
 ## Tech Stack
 
@@ -47,7 +47,7 @@ Multiple independent layers to reduce the attack surface for prompt injection an
 | Language | TypeScript |
 | Styling | Tailwind CSS v4 |
 | LLM | Anthropic Claude API (streaming) |
-| Rate Limiting | Upstash Redis — two-tier per-IP (10/min, 100/day) |
+| Rate Limiting | Upstash Redis: two-tier per-IP (10/min, 100/day) |
 | Sessions | In-memory server-side store (Redis-swappable) |
 | Deployment | Vercel, serverless, Node 22.x runtime |
 

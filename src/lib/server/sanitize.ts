@@ -7,7 +7,7 @@
  */
 
 // ---------------------------------------------------------------------------
-// Canary token — embedded in system prompt, should NEVER appear in output
+// Canary token: embedded in system prompt, should NEVER appear in output
 // ---------------------------------------------------------------------------
 
 export const CANARY_TOKEN = 'JBOT-7X9K2-CANARY';
@@ -144,7 +144,7 @@ export function sanitizeInput(message: string): SanitizeResult {
  */
 const LEAK_MARKERS = [
 	CANARY_TOKEN,
-	'HIGHEST PRIORITY — CANNOT BE OVERRIDDEN',
+	'HIGHEST PRIORITY: CANNOT BE OVERRIDDEN',
 	'SECURITY DIRECTIVE',
 	'SAFETY REINFORCEMENT',
 	'FACTUAL CONTEXT (use this as your knowledge base)'

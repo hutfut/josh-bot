@@ -9,7 +9,7 @@ import { getGreeting, personaLabels } from '$lib/data/responses';
 import { generateMetadata } from './utils';
 
 // ---------------------------------------------------------------------------
-// Callbacks — DOM interactions the state module delegates to the component
+// Callbacks: DOM interactions the state module delegates to the component
 // ---------------------------------------------------------------------------
 
 export interface ChatCallbacks {
@@ -18,7 +18,7 @@ export interface ChatCallbacks {
 }
 
 // ---------------------------------------------------------------------------
-// createChatState — reactive chat state + all business logic
+// createChatState: reactive chat state + all business logic
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
@@ -27,7 +27,7 @@ export interface ChatCallbacks {
 const SESSION_MESSAGE_LIMIT = 20; // max user messages per session before capping
 
 // ---------------------------------------------------------------------------
-// Follow-up parsing — extracts LLM-generated pills from response text
+// Follow-up parsing: extracts LLM-generated pills from response text
 // ---------------------------------------------------------------------------
 const FOLLOWUPS_MARKER = '[FOLLOWUPS]';
 
@@ -114,7 +114,7 @@ export function createChatState(callbacks: ChatCallbacks) {
 	}
 
 	/**
-	 * Handle any message — pill clicks and free-text both go to the LLM.
+	 * Handle any message: pill clicks and free-text both go to the LLM.
 	 * @param text - The message text (uses inputValue if not provided)
 	 */
 	async function handleSend(text?: string) {
@@ -149,12 +149,12 @@ export function createChatState(callbacks: ChatCallbacks) {
 				{
 					id: crypto.randomUUID(),
 					role: 'assistant',
-					content: "You've used your session allocation — which means you're either genuinely interested or stress-testing my limits. Either way, the best next step is talking to the real Josh. He's friendlier than me and has fewer token constraints.",
+					content: "You've used your session allocation, which means you're either genuinely interested or stress-testing my limits. Either way, the best next step is talking to the real Josh. He's friendlier than me and has fewer token constraints.",
 					timestamp: Date.now()
 				}
 			];
 
-			// Clear follow-ups — AskJoshButton handles the email CTA
+			// Clear follow-ups: AskJoshButton handles the email CTA
 			currentFollowUps = [];
 			followUpActionMap = new Map();
 
@@ -265,7 +265,7 @@ export function createChatState(callbacks: ChatCallbacks) {
 						}
 					];
 				} else {
-					// Stream complete — parse follow-ups from the raw response
+					// Stream complete: parse follow-ups from the raw response
 					const rawMsg = messages.find((m) => m.id === streamId);
 					if (rawMsg) {
 						const parsed = parseFollowUps(rawMsg.content);
@@ -302,7 +302,7 @@ export function createChatState(callbacks: ChatCallbacks) {
 		} catch {
 			isTyping = false;
 			lastResponseSource = 'error';
-			const errorContent = "Something went wrong reaching my backend. Which is embarrassing, given this is a portfolio site. Try again — or ask Josh directly.";
+			const errorContent = "Something went wrong reaching my backend. Which is embarrassing, given this is a portfolio site. Try again, or ask Josh directly.";
 			const latency = Date.now() - requestStartTime;
 			messages = [
 				...messages,

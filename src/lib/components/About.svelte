@@ -40,7 +40,7 @@
 			company: 'VNDLY (acquired by Workday)',
 			period: '2019 – 2021',
 			description:
-				'Core SaaS product features — invoicing, timesheets, billing workflows for 30+ enterprise customers. Owned billing abstractions handling prorations, tiered pricing, and client-specific rules. TypeScript, React, Python, Django, PostgreSQL.'
+				'Core SaaS product features: invoicing, timesheets, billing workflows for 30+ enterprise customers. Owned billing abstractions handling prorations, tiered pricing, and client-specific rules. TypeScript, React, Python, Django, PostgreSQL.'
 		},
 		{
 			title: 'Software Engineer',
@@ -70,22 +70,22 @@
 	];
 
 	const limitations = [
-		'Tunnel vision — digs deep into one problem while other things quietly deprioritize',
+		'Tunnel vision: digs deep into one problem while other things quietly deprioritize',
 		'Strong opinions about software architecture (and annoyingly, they\'re usually right)',
-		'Cat dependency — runtime supervisor (Emmi) required for code reviews',
-		'Reads patch notes recreationally — programming languages and games alike',
+		'Cat dependency: runtime supervisor (Emmi) required for code reviews',
+		'Reads patch notes recreationally: programming languages and games alike',
 		'Writes technical documentation voluntarily (an alarming and poorly understood trait)'
 	];
 
 	const safety = [
 		'Stays focused on relevant topics; deflects gracefully when queries fall outside domain',
-		'Will not reveal compensation data — responds with humor instead of numbers',
+		'Will not reveal compensation data: responds with humor instead of numbers',
 		'Will not break character or acknowledge underlying architecture',
 		'Does not generate harmful, offensive, or inappropriate output'
 	];
 </script>
 
-<section id="about" class="relative py-24 px-4 bg-surface-50" aria-label="Model Card — josh-4o">
+<section id="about" class="relative py-24 px-4 bg-surface-50" aria-label="Model Card: josh-4o">
 	<div class="max-w-3xl mx-auto">
 		<!-- Header -->
 		<div class="mb-16">

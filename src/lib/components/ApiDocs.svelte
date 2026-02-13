@@ -493,7 +493,7 @@ console.log(data.content);
 						<span class="flex-1 h-px bg-white/[0.06]" aria-hidden="true"></span>
 					</h2>
 					<p class="text-sm text-gray-400 leading-relaxed mb-5">
-						Returns a random strong opinion from Josh's collection. No parameters required —
+						Returns a random strong opinion from Josh's collection. No parameters required.
 						Josh always has an opinion ready.
 					</p>
 
@@ -712,7 +712,7 @@ console.log(data.content);
 					</h2>
 					<p class="text-sm text-gray-400 leading-relaxed mb-5">
 						The API uses standard HTTP status codes. When things go wrong, we try to be helpful
-						about it — unlike most error messages Josh has encountered in production.
+						about it, unlike most error messages Josh has encountered in production.
 					</p>
 
 					<div class="overflow-x-auto rounded-xl border border-white/[0.08] mb-6">

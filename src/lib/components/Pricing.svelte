@@ -56,7 +56,7 @@
 
 				<button
 					class="w-full py-3 px-6 rounded-xl bg-white/[0.06] border border-white/[0.1] text-sm font-medium text-gray-300 hover:bg-white/[0.1] hover:border-white/[0.18] hover:text-white transition-all duration-200 cursor-default"
-					aria-label="Current plan — Free"
+					aria-label="Current plan: Free"
 				>
 					Current plan
 				</button>
@@ -105,7 +105,7 @@
 
 				<button
 					class="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-600 text-sm font-semibold text-white hover:from-violet-500 hover:to-cyan-500 shadow-lg shadow-violet-600/20 hover:shadow-violet-500/30 transition-all duration-200 cursor-default"
-					aria-label="Upgrade to Pro — this is a joke"
+					aria-label="Upgrade to Pro: this is a joke"
 				>
 					Upgrade to Pro
 				</button>

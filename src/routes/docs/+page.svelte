@@ -6,7 +6,7 @@
 	<title>API Docs | josh-bot</title>
 	<meta
 		name="description"
-		content="josh-bot API documentation — completions, opinions, status, models, and more."
+		content="josh-bot API documentation: completions, opinions, status, models, and more."
 	/>
 </svelte:head>
 

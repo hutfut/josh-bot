@@ -15,7 +15,7 @@ import {
 import type { Persona } from '$lib/types';
 
 // ---------------------------------------------------------------------------
-// Anthropic client (lazy — only created if API key exists)
+// Anthropic client (lazy: only created if API key exists)
 // ---------------------------------------------------------------------------
 let anthropicClient: Anthropic | null = null;
 
@@ -56,7 +56,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	if (rateCheck.limited) {
 		const response =
 			rateCheck.tier === 'day'
-				? "You've hit your daily limit. Josh is flattered by the attention, but come back tomorrow — or just email him directly."
+				? "You've hit your daily limit. Josh is flattered by the attention, but come back tomorrow, or just email him directly."
 				: "You're sending messages faster than Josh can type, which is saying something. Slow down and try again in a minute.";
 		return json({ response, source: 'rate-limit' }, { status: 429 });
 	}
@@ -84,7 +84,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	if (message.length > MAX_MESSAGE_LENGTH) {
 		return json(
 			{
-				response: `That message is ${message.length} characters. I have a ${MAX_MESSAGE_LENGTH}-character limit — I'm a portfolio chatbot, not a therapist.`,
+				response: `That message is ${message.length} characters. I have a ${MAX_MESSAGE_LENGTH}-character limit. I'm a portfolio chatbot, not a therapist.`,
 				source: 'error'
 			},
 			{ status: 400 }
@@ -102,9 +102,9 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 		console.warn(
 			`[api/chat] Injection attempt detected from ${ip}:`,
 			sanitized.labels,
-			`— message: "${message.slice(0, 120)}..."`
+			`message: "${message.slice(0, 120)}..."`
 		);
-		// Don't block — the hardened prompt handles it. But we log it.
+		// Don't block: the hardened prompt handles it. But we log it.
 		// For high-confidence patterns, you could return a canned response here.
 	}
 
@@ -114,10 +114,10 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	if (clientSessionId) {
 		const existing = getSession(clientSessionId);
 		if (existing) {
-			// Valid session — use server-stored voiceId/persona (ignore client values)
+			// Valid session: use server-stored voiceId/persona (ignore client values)
 			sessionId = clientSessionId;
 		} else {
-			// Session expired or invalid — create fresh
+			// Session expired or invalid: create fresh
 			const newId = createSession(ip, safeVoiceId, safePersona);
 			if (!newId) {
 				return json(
@@ -132,7 +132,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 			sessionId = newId;
 		}
 	} else {
-		// First message — create new session
+		// First message: create new session
 		const newId = createSession(ip, safeVoiceId, safePersona);
 		if (!newId) {
 			return json(
@@ -154,7 +154,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 			return json(
 				{
 					response:
-						"You've used your session allocation — which means you're either genuinely interested or stress-testing my limits. Either way, the best next step is talking to the real Josh.",
+						"You've used your session allocation, which means you're either genuinely interested or stress-testing my limits. Either way, the best next step is talking to the real Josh.",
 					source: 'rate-limit',
 					sessionId
 				},
@@ -226,11 +226,11 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 								console.error(
 									'[api/chat] OUTPUT LEAK DETECTED:',
 									leakCheck.markers,
-									`— session: ${sessionId}, ip: ${ip}`
+									`session: ${sessionId}, ip: ${ip}`
 								);
 								controller.enqueue(
 									encoder.encode(
-										"\n\nI seem to have gotten confused. Let's talk about Josh instead — what would you like to know?"
+										"\n\nI seem to have gotten confused. Let's talk about Josh instead. What would you like to know?"
 									)
 								);
 								break;

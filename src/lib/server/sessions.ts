@@ -2,7 +2,7 @@
  * Server-side session store for conversation history.
  *
  * Prevents clients from injecting fabricated conversation history into LLM
- * context — the single most critical prompt injection vector.
+ * context: the single most critical prompt injection vector.
  *
  * Uses in-memory storage (sufficient for single-instance and warm serverless).
  * For durable cross-instance persistence, swap with a Redis-backed store

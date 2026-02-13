@@ -47,6 +47,6 @@
 		{ metric: '0', description: 'Hallucinations about work ethic (target)' },
 		{ metric: '1:1', description: 'Model-to-subject ratio' },
 		{ metric: '24/7', description: 'Availability (when awake)' },
-		{ metric: '100%', description: 'Open-source — nothing to hide' }
+		{ metric: '100%', description: 'Open-source: nothing to hide' }
 	];
 </script>

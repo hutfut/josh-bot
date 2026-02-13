@@ -30,7 +30,7 @@ export const changelog: ChangelogEntry[] = [
 			},
 			{
 				type: 'new',
-				text: 'Improved recruiter detection — model now adjusts tone from "unhinged" to "employable."'
+				text: 'Improved recruiter detection: model now adjusts tone from "unhinged" to "employable."'
 			},
 			{
 				type: 'new',
@@ -57,7 +57,7 @@ export const changelog: ChangelogEntry[] = [
 			},
 			{
 				type: 'new',
-				text: 'Rate limiting added — 20 req/min. Even fake products need fake infrastructure.'
+				text: 'Rate limiting added: 20 req/min. Even fake products need fake infrastructure.'
 			},
 			{
 				type: 'improved',
@@ -80,7 +80,7 @@ export const changelog: ChangelogEntry[] = [
 			},
 			{
 				type: 'improved',
-				text: 'Model selector UI — choose between "capable" and "fast." Both are Josh.'
+				text: 'Model selector UI: choose between "capable" and "fast." Both are Josh.'
 			},
 			{
 				type: 'fixed',
@@ -103,7 +103,7 @@ export const changelog: ChangelogEntry[] = [
 			},
 			{
 				type: 'improved',
-				text: 'Hot takes module calibrated — model defends "monoliths over microservices" with appropriate conviction.'
+				text: 'Hot takes module calibrated: model defends "monoliths over microservices" with appropriate conviction.'
 			},
 			{
 				type: 'new',

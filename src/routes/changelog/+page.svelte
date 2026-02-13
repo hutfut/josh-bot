@@ -16,7 +16,7 @@
 	<title>Changelog | josh-bot</title>
 	<meta
 		name="description"
-		content="What's new in josh-bot — release notes, improvements, and questionable product decisions."
+		content="What's new in josh-bot: release notes, improvements, and questionable product decisions."
 	/>
 </svelte:head>
 
