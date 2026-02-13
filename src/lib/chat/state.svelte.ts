@@ -231,17 +231,21 @@ export function createChatState(callbacks: ChatCallbacks) {
 				const reader = res.body.getReader();
 				const decoder = new TextDecoder();
 				let first = true;
+				// Accumulate raw stream so we can strip [FOLLOWUPS] from display while streaming
+				let streamBuffer = '';
 				while (true) {
 					const { done, value } = await reader.read();
 					if (done) break;
 					const chunk = decoder.decode(value, { stream: true });
+					streamBuffer += chunk;
+					const { content: displayContent } = parseFollowUps(streamBuffer);
 					if (first) {
 						messages = [
 							...messages,
 							{
 								id: streamId,
 								role: 'assistant',
-								content: chunk,
+								content: displayContent,
 								timestamp: Date.now(),
 								source: 'llm-stream',
 								voiceName: selectedVoice.name,
@@ -253,7 +257,7 @@ export function createChatState(callbacks: ChatCallbacks) {
 						await callbacks.scrollToBottom();
 					} else {
 						messages = messages.map((m) =>
-							m.id === streamId ? { ...m, content: m.content + chunk } : m
+							m.id === streamId ? { ...m, content: displayContent } : m
 						);
 					}
 				}
@@ -275,19 +279,15 @@ export function createChatState(callbacks: ChatCallbacks) {
 						}
 					];
 				} else {
-					// Stream complete: parse follow-ups from the raw response
-					const rawMsg = messages.find((m) => m.id === streamId);
-					if (rawMsg) {
-						const parsed = parseFollowUps(rawMsg.content);
-						const latency = Date.now() - requestStartTime;
-						// Update message with clean content (no follow-up marker) and metadata
-						messages = messages.map((m) =>
-							m.id === streamId
-								? { ...m, content: parsed.content, metadata: generateMetadata('llm-stream', parsed.content.length, latency) }
-								: m
-						);
-						applyFollowUps(parsed.followUps);
-					}
+					// Stream complete: extract follow-ups from raw buffer and add metadata
+					const parsed = parseFollowUps(streamBuffer);
+					const latency = Date.now() - requestStartTime;
+					applyFollowUps(parsed.followUps);
+					messages = messages.map((m) =>
+						m.id === streamId
+							? { ...m, content: parsed.content, metadata: generateMetadata('llm-stream', parsed.content.length, latency) }
+							: m
+					);
 				}
 				lastResponseSource = 'llm-stream';
 			} else {
