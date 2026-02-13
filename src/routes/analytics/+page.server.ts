@@ -11,6 +11,9 @@ export interface AnalyticsData {
 		messagesSent: number;
 		followupClicks: number;
 		sessionsCapped: number;
+		totalTokens: number;
+		llmResponses: number;
+		avgTokensPerResponse: number;
 	};
 	voiceDistribution: { voiceId: string; count: number }[];
 	personaBreakdown: { persona: string; count: number }[];
@@ -85,10 +88,19 @@ GROUP BY persona ORDER BY count DESC
 `;
 
 const QUERY_DEPTH = `
-SELECT toInt32(properties.messageNumber) as depth, count() as count
+SELECT toInt(properties.messageNumber) as depth, count() as count
 FROM events
 WHERE event = 'message_sent' AND timestamp >= now() - INTERVAL 30 DAY
 GROUP BY depth ORDER BY depth ASC
+`;
+
+const QUERY_TOKENS = `
+SELECT
+  sum(toInt(properties.tokens)) as total_tokens,
+  count() as llm_responses,
+  avg(toInt(properties.tokens)) as avg_tokens
+FROM events
+WHERE event = 'tokens_used' AND timestamp >= now() - INTERVAL 30 DAY
 `;
 
 // ---------------------------------------------------------------------------
@@ -96,7 +108,7 @@ GROUP BY depth ORDER BY depth ASC
 // ---------------------------------------------------------------------------
 
 const EMPTY_DATA: AnalyticsData = {
-	stats: { pageviews: 0, messagesSent: 0, followupClicks: 0, sessionsCapped: 0 },
+	stats: { pageviews: 0, messagesSent: 0, followupClicks: 0, sessionsCapped: 0, totalTokens: 0, llmResponses: 0, avgTokensPerResponse: 0 },
 	voiceDistribution: [],
 	personaBreakdown: [],
 	conversationDepth: [],
@@ -113,20 +125,28 @@ export const load: PageServerLoad = async () => {
 	}
 
 	try {
-		const [statsRows, voiceRows, personaRows, depthRows] = await Promise.all([
+		const [statsRows, voiceRows, personaRows, depthRows, tokenRows] = await Promise.all([
 			queryPostHog(QUERY_STATS),
 			queryPostHog(QUERY_VOICES),
 			queryPostHog(QUERY_PERSONAS),
-			queryPostHog(QUERY_DEPTH)
+			queryPostHog(QUERY_DEPTH),
+			queryPostHog(QUERY_TOKENS)
 		]);
 
 		// Query 1: single row with [pageviews, messages_sent, followup_clicks, sessions_capped]
 		const statsRow = statsRows[0] ?? [0, 0, 0, 0];
+
+		// Query 5: single row with [total_tokens, llm_responses, avg_tokens]
+		const tokenRow = tokenRows[0] ?? [0, 0, 0];
+
 		const stats = {
 			pageviews: Number(statsRow[0]) || 0,
 			messagesSent: Number(statsRow[1]) || 0,
 			followupClicks: Number(statsRow[2]) || 0,
-			sessionsCapped: Number(statsRow[3]) || 0
+			sessionsCapped: Number(statsRow[3]) || 0,
+			totalTokens: Number(tokenRow[0]) || 0,
+			llmResponses: Number(tokenRow[1]) || 0,
+			avgTokensPerResponse: Math.round(Number(tokenRow[2]) || 0)
 		};
 
 		// Query 2: rows of [voice_id, count]

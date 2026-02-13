@@ -1,7 +1,17 @@
 <script lang="ts">
-	import { Chart, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
+	import {
+		Chart,
+		DoughnutController,
+		BarController,
+		ArcElement,
+		BarElement,
+		CategoryScale,
+		LinearScale,
+		Tooltip,
+		Legend
+	} from 'chart.js';
 
-	Chart.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+	Chart.register(DoughnutController, BarController, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
 	let { data } = $props();
 
@@ -21,6 +31,16 @@
 		engineer: 'Engineer',
 		curious: 'Curious'
 	};
+
+	// ---------------------------------------------------------------------------
+	// Helpers
+	// ---------------------------------------------------------------------------
+
+	function ordinal(n: number): string {
+		const s = ['th', 'st', 'nd', 'rd'];
+		const v = n % 100;
+		return n + (s[(v - 20) % 10] || s[v] || s[0]);
+	}
 
 	// ---------------------------------------------------------------------------
 	// Chart color palette (site-aligned)
@@ -52,6 +72,12 @@
 		data.stats.messagesSent > 0
 			? Math.round((data.stats.followupClicks / data.stats.messagesSent) * 100)
 			: 0
+	);
+
+	// Rough cost estimate: Claude Haiku 4.5 output tokens at $5/M.
+	// Input tokens are not tracked, so this is output-only and underestimates total cost.
+	const estimatedCost = $derived(
+		(data.stats.totalTokens / 1_000_000) * 5
 	);
 
 	// ---------------------------------------------------------------------------
@@ -140,28 +166,35 @@
 		const chart = new Chart(depthCanvas, {
 			type: 'bar',
 			data: {
-				labels: data.conversationDepth.map((d) => `Msg ${d.depth}`),
+				labels: data.conversationDepth.map((d) => ordinal(d.depth)),
 				datasets: [{
-					label: 'Messages',
+					label: 'Users reached',
 					data: data.conversationDepth.map((d) => d.count),
-					backgroundColor: 'rgba(139, 92, 246, 0.6)',
+					backgroundColor: data.conversationDepth.map((_, i, arr) => {
+						const opacity = 0.8 - (i / arr.length) * 0.5;
+						return `rgba(139, 92, 246, ${opacity})`;
+					}),
 					borderColor: 'rgba(139, 92, 246, 1)',
 					borderWidth: 1,
-					borderRadius: 4
+					borderRadius: 4,
+					borderSkipped: false
 				}]
 			},
 			options: {
+				indexAxis: 'y',
 				responsive: true,
-				maintainAspectRatio: true,
+				maintainAspectRatio: false,
 				scales: {
 					x: {
+						title: { display: true, text: 'Messages sent', color: 'rgba(107, 114, 128, 1)', font: { size: 11 } },
 						ticks: { color: 'rgba(156, 163, 175, 1)', font: { size: 12 } },
-						grid: { display: false },
+						grid: { color: 'rgba(255, 255, 255, 0.04)' },
 						border: { display: false }
 					},
 					y: {
+						title: { display: true, text: 'Message #', color: 'rgba(107, 114, 128, 1)', font: { size: 11 } },
 						ticks: { color: 'rgba(156, 163, 175, 1)', font: { size: 12 } },
-						grid: { color: 'rgba(255, 255, 255, 0.04)' },
+						grid: { display: false },
 						border: { display: false }
 					}
 				},
@@ -172,7 +205,11 @@
 						titleColor: '#fff',
 						bodyColor: 'rgba(156, 163, 175, 1)',
 						borderColor: 'rgba(255, 255, 255, 0.08)',
-						borderWidth: 1
+						borderWidth: 1,
+						callbacks: {
+							title: (items) => `${items[0].label} message`,
+							label: (item) => ` ${item.formattedValue} users reached this depth`
+						}
 					}
 				}
 			}
@@ -246,6 +283,23 @@
 				</div>
 			</div>
 
+			<!-- Token usage cards -->
+			<div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-12 animate-fade-in" style="animation-delay: 0.15s;">
+				<div class="rounded-xl border border-white/[0.08] bg-white/[0.02] px-5 py-5">
+					<p class="text-xs text-gray-500 uppercase tracking-wide mb-2">Output Tokens</p>
+					<p class="text-3xl font-bold text-white">{data.stats.totalTokens.toLocaleString()}</p>
+				</div>
+				<div class="rounded-xl border border-white/[0.08] bg-white/[0.02] px-5 py-5">
+					<p class="text-xs text-gray-500 uppercase tracking-wide mb-2">Avg Tokens / Response</p>
+					<p class="text-3xl font-bold text-white">{data.stats.avgTokensPerResponse}</p>
+				</div>
+				<div class="rounded-xl border border-white/[0.08] bg-white/[0.02] px-5 py-5">
+					<p class="text-xs text-gray-500 uppercase tracking-wide mb-2">Est. Cost (output only)</p>
+					<p class="text-3xl font-bold text-white">${estimatedCost < 0.01 ? '<0.01' : estimatedCost.toFixed(2)}</p>
+					<p class="text-[10px] text-gray-600 mt-1">Haiku 4.5 @ $5/M output tokens</p>
+				</div>
+			</div>
+
 			<!-- Doughnut charts: voice + persona side by side -->
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 animate-fade-in" style="animation-delay: 0.18s;">
 				<div class="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6">
@@ -273,9 +327,9 @@
 			<!-- Conversation depth bar chart -->
 			<div class="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6 mb-12 animate-fade-in" style="animation-delay: 0.24s;">
 				<h3 class="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-6">Conversation Depth</h3>
-				<p class="text-xs text-gray-500 mb-4">How many messages deep do visitors go?</p>
+				<p class="text-xs text-gray-500 mb-4">How deep do conversations go? Each bar shows how many users sent an Nth message.</p>
 				{#if data.conversationDepth.length > 0}
-					<div class="max-w-3xl">
+					<div class="max-w-3xl" style="height: {Math.max(200, data.conversationDepth.length * 32)}px;">
 						<canvas bind:this={depthCanvas}></canvas>
 					</div>
 				{:else}
@@ -285,9 +339,12 @@
 		{/if}
 
 		<!-- Footer -->
-		<div class="mt-16 pt-8 border-t border-white/[0.06] text-center">
+		<div class="mt-16 pt-8 border-t border-white/[0.06] text-center space-y-2">
 			<p class="text-xs text-gray-500">
 				Data queried from PostHog via HogQL. Dashboard is public. You can look, but you can't touch.
+			</p>
+			<p class="text-xs text-gray-600">
+				Ad blockers and browser tracking protection will prevent analytics from being collected. Numbers here likely undercount actual usage.
 			</p>
 		</div>
 	</main>
