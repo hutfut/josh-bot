@@ -116,64 +116,91 @@ const EMPTY_DATA: AnalyticsData = {
 };
 
 // ---------------------------------------------------------------------------
+// In-memory cache (survives warm function instances; CDN cache handles the edge)
+// ---------------------------------------------------------------------------
+
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+let cachedData: AnalyticsData | null = null;
+let cachedAt = 0;
+
+async function fetchAnalyticsData(): Promise<AnalyticsData> {
+	const now = Date.now();
+	if (cachedData && now - cachedAt < CACHE_TTL_MS) {
+		return cachedData;
+	}
+
+	const [statsRows, voiceRows, personaRows, depthRows, tokenRows] = await Promise.all([
+		queryPostHog(QUERY_STATS),
+		queryPostHog(QUERY_VOICES),
+		queryPostHog(QUERY_PERSONAS),
+		queryPostHog(QUERY_DEPTH),
+		queryPostHog(QUERY_TOKENS)
+	]);
+
+	// Query 1: single row with [pageviews, messages_sent, followup_clicks, sessions_capped]
+	const statsRow = statsRows[0] ?? [0, 0, 0, 0];
+
+	// Query 5: single row with [total_tokens, llm_responses, avg_tokens]
+	const tokenRow = tokenRows[0] ?? [0, 0, 0];
+
+	const stats = {
+		pageviews: Number(statsRow[0]) || 0,
+		messagesSent: Number(statsRow[1]) || 0,
+		followupClicks: Number(statsRow[2]) || 0,
+		sessionsCapped: Number(statsRow[3]) || 0,
+		totalTokens: Number(tokenRow[0]) || 0,
+		llmResponses: Number(tokenRow[1]) || 0,
+		avgTokensPerResponse: Math.round(Number(tokenRow[2]) || 0)
+	};
+
+	// Query 2: rows of [voice_id, count]
+	const voiceDistribution = voiceRows.map((row) => ({
+		voiceId: String(row[0] ?? 'unknown'),
+		count: Number(row[1]) || 0
+	}));
+
+	// Query 3: rows of [persona, count]
+	const personaBreakdown = personaRows.map((row) => ({
+		persona: String(row[0] ?? 'unknown'),
+		count: Number(row[1]) || 0
+	}));
+
+	// Query 4: rows of [depth, count]
+	const conversationDepth = depthRows.map((row) => ({
+		depth: Number(row[0]) || 0,
+		count: Number(row[1]) || 0
+	}));
+
+	const result: AnalyticsData = {
+		stats,
+		voiceDistribution,
+		personaBreakdown,
+		conversationDepth,
+		available: true
+	};
+
+	cachedData = result;
+	cachedAt = now;
+	return result;
+}
+
+// ---------------------------------------------------------------------------
 // Load function
 // ---------------------------------------------------------------------------
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ setHeaders }) => {
+	// CDN cache: serve stale instantly, revalidate in background after 30 min
+	setHeaders({
+		'Cache-Control': 's-maxage=1800, stale-while-revalidate=3600'
+	});
+
 	if (!env.POSTHOG_PERSONAL_API_KEY || !env.POSTHOG_PROJECT_ID) {
 		return EMPTY_DATA;
 	}
 
 	try {
-		const [statsRows, voiceRows, personaRows, depthRows, tokenRows] = await Promise.all([
-			queryPostHog(QUERY_STATS),
-			queryPostHog(QUERY_VOICES),
-			queryPostHog(QUERY_PERSONAS),
-			queryPostHog(QUERY_DEPTH),
-			queryPostHog(QUERY_TOKENS)
-		]);
-
-		// Query 1: single row with [pageviews, messages_sent, followup_clicks, sessions_capped]
-		const statsRow = statsRows[0] ?? [0, 0, 0, 0];
-
-		// Query 5: single row with [total_tokens, llm_responses, avg_tokens]
-		const tokenRow = tokenRows[0] ?? [0, 0, 0];
-
-		const stats = {
-			pageviews: Number(statsRow[0]) || 0,
-			messagesSent: Number(statsRow[1]) || 0,
-			followupClicks: Number(statsRow[2]) || 0,
-			sessionsCapped: Number(statsRow[3]) || 0,
-			totalTokens: Number(tokenRow[0]) || 0,
-			llmResponses: Number(tokenRow[1]) || 0,
-			avgTokensPerResponse: Math.round(Number(tokenRow[2]) || 0)
-		};
-
-		// Query 2: rows of [voice_id, count]
-		const voiceDistribution = voiceRows.map((row) => ({
-			voiceId: String(row[0] ?? 'unknown'),
-			count: Number(row[1]) || 0
-		}));
-
-		// Query 3: rows of [persona, count]
-		const personaBreakdown = personaRows.map((row) => ({
-			persona: String(row[0] ?? 'unknown'),
-			count: Number(row[1]) || 0
-		}));
-
-		// Query 4: rows of [depth, count]
-		const conversationDepth = depthRows.map((row) => ({
-			depth: Number(row[0]) || 0,
-			count: Number(row[1]) || 0
-		}));
-
-		return {
-			stats,
-			voiceDistribution,
-			personaBreakdown,
-			conversationDepth,
-			available: true
-		} satisfies AnalyticsData;
+		return await fetchAnalyticsData();
 	} catch (err) {
 		console.error('[analytics] Failed to load PostHog data:', err);
 		return EMPTY_DATA;
