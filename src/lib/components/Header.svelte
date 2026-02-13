@@ -9,7 +9,8 @@
 		{ label: 'Docs', href: '/docs' },
 		{ label: 'Pricing', href: '/pricing' },
 		{ label: 'About', href: '/about' },
-		{ label: 'Changelog', href: '/changelog' }
+		{ label: 'Changelog', href: '/changelog' },
+		{ label: 'Analytics', href: '/analytics' }
 	];
 
 	function getHref(item: { href: string }): string {

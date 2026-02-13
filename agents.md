@@ -6,7 +6,7 @@
 
 ## Structure
 
-- **`src/routes/`** – Pages and API. Chat UI is `chat/+page.svelte`; the only chat endpoint is `api/chat/+server.ts`.
+- **`src/routes/`** – Pages and API. Chat UI is `chat/+page.svelte`; the only chat endpoint is `api/chat/+server.ts`. `/analytics` embeds a public PostHog dashboard.
 - **`src/lib/server/`** – Server-only: prompts, context builder, sanitize, sessions, ratelimit. Never import these from client code (SvelteKit will error).
 - **`src/lib/`** (non-server) – Shared types, components, and client-safe logic. Chat state and stream consumption live in `lib/chat/`.
 - **`src/lib/components/VoiceCards.svelte`** – Initial voice selection as a 2x2/4-col card grid (shown pre-conversation).

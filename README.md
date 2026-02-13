@@ -75,7 +75,9 @@ npm run dev:live   # live mode: uses real LLM and rate limiter (requires API key
 | `ANTHROPIC_API_KEY` | Yes (live) | Enables chat functionality |
 | `UPSTASH_REDIS_REST_URL` | No | Production rate limiting |
 | `UPSTASH_REDIS_REST_TOKEN` | No | Production rate limiting |
-| `PUBLIC_POSTHOG_KEY` | No | PostHog project API key (enables analytics) |
+| `PUBLIC_POSTHOG_KEY` | No | PostHog project API key (enables client-side analytics) |
+| `POSTHOG_PERSONAL_API_KEY` | No | PostHog personal API key with Query Read permission (powers /analytics page) |
+| `POSTHOG_PROJECT_ID` | No | PostHog project ID (powers /analytics page) |
 | `SKIP_EXTERNAL` | No | Set to `true` to bypass LLM and rate limiting (set via `.env.offline`, loaded by `npm run dev`) |
 
 Rate limiting falls back to an in-memory implementation when Upstash credentials are not provided. Session storage is in-memory in all environments.

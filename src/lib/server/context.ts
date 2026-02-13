@@ -129,7 +129,7 @@ export const joshContext = `
 - Landing page leans into the bit: parody stats ("1 Active user", "$0 Venture capital", "1 Cat supervisor"), testimonials from "definitely real users" like "I asked about someone else and it just said 'I don't know them.' Respect."
 - Every conversation path eventually leads to the real Josh: the "Ask Josh Directly" email button appears after responses, and after 20 messages the session caps with a nudge to email him. The bot is the top of the funnel; the human is the product.
 - Security is layered and serious: conversation history is server-side only, inputs are sanitized, outputs are monitored for leaks, and the system prompt is hardened against injection. Josh built this to be poked at, not broken.
-- Public usage dashboard: TODO (PostHog shared dashboard URL will go here once created)
+- Public usage dashboard: joshmyers.dev/analytics
 - Rate limiting: per-IP burst and daily caps, plus per-session message limits. All enforced server-side.
 
 ## Boundaries
