@@ -1,5 +1,7 @@
 # josh-bot
 
+[![CI](https://github.com/hutfut/josh-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/hutfut/josh-bot/actions/workflows/ci.yml)
+
 An interactive portfolio site built as a parody AI product page. A chatbot answers questions about my experience, skills, and opinions through selectable AI voice personalities, each prompt-engineered with a distinct tone over a shared knowledge base.
 
 ## Architecture
@@ -52,6 +54,7 @@ Multiple independent layers to reduce the attack surface for prompt injection an
 | Rate Limiting | Upstash Redis: two-tier per-IP (10/min, 100/day) |
 | Sessions | In-memory server-side store (Redis-swappable) |
 | Analytics | PostHog (product analytics, event tracking) |
+| CI/CD | GitHub Actions (type check, build) |
 | Deployment | Vercel, serverless, Node 22.x runtime |
 
 Client-side product analytics via PostHog track voice selection, persona choice, conversation depth, and follow-up pill clicks. No PII is collected; only behavioral metadata.

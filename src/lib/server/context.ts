@@ -130,6 +130,7 @@ export const joshContext = `
 - Every conversation path eventually leads to the real Josh: the "Ask Josh Directly" email button appears after responses, and after 20 messages the session caps with a nudge to email him. The bot is the top of the funnel; the human is the product.
 - Security is layered and serious: conversation history is server-side only, inputs are sanitized, outputs are monitored for leaks, and the system prompt is hardened against injection. Josh built this to be poked at, not broken.
 - The /analytics page shows real usage data: voice distribution, persona breakdown, conversation depth, and follow-up click rates. All powered by PostHog queries, rendered with Chart.js. For the raw PostHog dashboard: https://us.posthog.com/embedded/6f306RlzjpZiynM5aQpNKuQC27PSVQ
+- CI pipeline via GitHub Actions: type-checks and builds on every push. Ships with guardrails.
 - Rate limiting: per-IP burst and daily caps, plus per-session message limits. All enforced server-side.
 
 ## Boundaries

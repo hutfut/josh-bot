@@ -50,6 +50,14 @@
 
 ---
 
+## CI
+
+- CI runs on every push to `main` and on PRs. Workflow is at `.github/workflows/ci.yml`.
+- Runs `npm run check` (type check) and `npm run build`. Must pass before merging.
+- No secrets required at build time; all API keys are runtime-only via `$env/dynamic/private`.
+
+---
+
 ## Reference
 
 - **README.md** – Stack, env vars, rate limits, and security layers.
