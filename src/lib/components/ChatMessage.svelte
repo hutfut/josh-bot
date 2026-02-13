@@ -1,13 +1,20 @@
 <script lang="ts">
 	import type { ChatMessage } from '$lib/types';
+	import VoiceAvatar from './VoiceAvatar.svelte';
 
 	let {
 		message,
-		voiceName
+		voiceName,
+		voiceId = 'butler'
 	}: {
 		message: ChatMessage;
 		voiceName: string;
+		voiceId?: string;
 	} = $props();
+
+	/** Use per-message voice name/id (for mid-conversation switches) with fallback */
+	const displayVoiceName = $derived(message.voiceName ?? voiceName);
+	const displayVoiceId = $derived(message.voiceId ?? voiceId);
 
 	let copied = $state(false);
 	let feedback: 'up' | 'down' | null = $state(null);
@@ -55,15 +62,12 @@
 </script>
 
 {#if message.role === 'assistant'}
-	<div class="flex gap-3 animate-slide-up group/msg" role="article" aria-label="{voiceName} response">
-		<div
-			class="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0 mt-0.5 select-none"
-			aria-hidden="true"
-		>
-			j
+	<div class="flex gap-3 animate-slide-up group/msg" role="article" aria-label="{displayVoiceName} response">
+		<div class="flex-shrink-0 mt-0.5 scale-75 origin-top-left">
+			<VoiceAvatar voiceId={displayVoiceId} active={true} />
 		</div>
 		<div class="flex-1 min-w-0">
-			<p class="text-xs text-gray-500 mb-1.5 font-medium">{voiceName}</p>
+			<p class="text-xs text-gray-500 mb-1.5 font-medium">{displayVoiceName}</p>
 			<div class="text-[14px] text-gray-200 leading-relaxed whitespace-pre-line">
 				{message.content}
 			</div>

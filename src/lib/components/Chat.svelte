@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { createChatState } from '$lib/chat/state.svelte';
-	import ModelSelector from './ModelSelector.svelte';
+	import VoiceCards from './VoiceCards.svelte';
+	import VoiceBar from './VoiceBar.svelte';
 	import ChatMessageComponent from './ChatMessage.svelte';
 	import TypingIndicator from './TypingIndicator.svelte';
 	import FollowUpPills from './FollowUpPills.svelte';
@@ -50,14 +51,14 @@
 		aria-label="Conversation messages"
 		style="-webkit-overflow-scrolling: touch;"
 	>
-		<div class="max-w-2xl mx-auto space-y-6">
-			<!-- Voice selector -->
-			<div class="flex justify-center pb-2">
-				<div class="flex items-center gap-2">
-					<span class="text-xs text-gray-500 uppercase tracking-wider">Voice</span>
-					<ModelSelector voices={chat.voices} selected={chat.selectedVoice} onSelect={chat.handleVoiceChange} />
-				</div>
+		<!-- Voice cards: wider than chat column, shown before conversation starts -->
+		{#if chat.messages.length <= 1 && !chat.selectedPersona}
+			<div class="max-w-4xl mx-auto mb-8 px-2">
+				<VoiceCards voices={chat.voices} selected={chat.selectedVoice} onSelect={chat.handleVoiceChange} />
 			</div>
+		{/if}
+
+		<div class="max-w-2xl mx-auto space-y-6">
 			{#each chat.messages as message, i (message.id)}
 				{@const prevMessage = i > 0 ? chat.messages[i - 1] : null}
 				{@const showTimestamp = prevMessage && (message.timestamp - prevMessage.timestamp > 120000)}
@@ -68,11 +69,11 @@
 						</span>
 					</div>
 				{/if}
-				<ChatMessageComponent {message} voiceName={chat.selectedVoice.name} />
+				<ChatMessageComponent {message} voiceName={message.voiceName ?? chat.selectedVoice.name} voiceId={message.voiceId ?? chat.selectedVoice.id} />
 			{/each}
 
 			{#if chat.isTyping}
-				<TypingIndicator voiceName={chat.selectedVoice.name} />
+				<TypingIndicator voiceName={chat.selectedVoice.name} voiceId={chat.selectedVoice.id} />
 			{/if}
 		</div>
 	</div>
@@ -98,7 +99,13 @@
 		isTyping={chat.isTyping}
 		disabled={chat.sessionCapped}
 		onSend={() => chat.handleSend()}
-	/>
+	>
+		{#snippet leftElement()}
+			{#if chat.messages.length > 1 || chat.selectedPersona}
+				<VoiceBar voices={chat.voices} selected={chat.selectedVoice} onSelect={chat.handleVoiceChange} />
+			{/if}
+		{/snippet}
+	</ChatInput>
 </section>
 
 <style>

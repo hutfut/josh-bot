@@ -49,16 +49,22 @@ function stripFollowUps(text: string): string {
 // POST /api/chat
 // ---------------------------------------------------------------------------
 export const POST: RequestHandler = async ({ request, getClientAddress }) => {
-	// --- Rate limiting ---
-	const ip = getClientAddress();
-	const rateCheck = await checkRateLimit(ip);
+	/** When SKIP_EXTERNAL is set (e.g. `npm run dev`), bypass LLM and rate limiting. */
+	const skipExternal = env.SKIP_EXTERNAL === 'true';
 
-	if (rateCheck.limited) {
-		const response =
-			rateCheck.tier === 'day'
-				? "You've hit your daily limit. Josh is flattered by the attention, but come back tomorrow, or just email him directly."
-				: "You're sending messages faster than Josh can type, which is saying something. Slow down and try again in a minute.";
-		return json({ response, source: 'rate-limit' }, { status: 429 });
+	// --- Rate limiting (skipped in offline dev mode) ---
+	const ip = getClientAddress();
+
+	if (!skipExternal) {
+		const rateCheck = await checkRateLimit(ip);
+
+		if (rateCheck.limited) {
+			const response =
+				rateCheck.tier === 'day'
+					? "You've hit your daily limit. Josh is flattered by the attention, but come back tomorrow, or just email him directly."
+					: "You're sending messages faster than Josh can type, which is saying something. Slow down and try again in a minute.";
+			return json({ response, source: 'rate-limit' }, { status: 429 });
+		}
 	}
 
 	// --- Parse request ---
@@ -170,7 +176,19 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 		);
 	}
 
-	// --- LLM ---
+	// --- LLM (skipped in offline dev mode) ---
+	if (skipExternal) {
+		const devResponse = `[Dev mode] Voice: ${safeVoiceId}, persona: ${safePersona ?? 'none'}. "${sanitized.normalized.slice(0, 80)}"`;
+		addMessage(sessionId, 'assistant', devResponse);
+		return json({
+			response: devResponse,
+			source: 'llm-unavailable',
+			sessionId
+		}, {
+			headers: { 'X-Session-Id': sessionId }
+		});
+	}
+
 	const client = getClient();
 	if (!client) {
 		return json({
@@ -181,10 +199,11 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	}
 
 	try {
-		// Use session's stored voiceId/persona (not client-supplied values)
+		// Use per-request voiceId (already validated against allowlist) to support
+		// mid-conversation voice switching. Persona still falls back to session value.
 		const session = getSession(sessionId);
 		const systemPrompt = getSystemPrompt(
-			session?.voiceId ?? safeVoiceId,
+			safeVoiceId,
 			session?.persona ?? safePersona
 		);
 

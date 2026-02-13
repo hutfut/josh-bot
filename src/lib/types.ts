@@ -14,6 +14,8 @@ export interface ChatMessage {
 	timestamp: number;
 	source?: ResponseSource;
 	metadata?: MessageMetadata;
+	voiceName?: string;
+	voiceId?: string;
 }
 
 export interface ActionPill {
@@ -26,4 +28,5 @@ export interface Voice {
 	name: string;
 	description: string;
 	badge?: string;
+	preview: string;
 }

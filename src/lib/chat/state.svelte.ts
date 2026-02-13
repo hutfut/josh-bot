@@ -89,7 +89,9 @@ export function createChatState(callbacks: ChatCallbacks) {
 				id: crypto.randomUUID(),
 				role: 'assistant',
 				content: greeting,
-				timestamp: Date.now()
+				timestamp: Date.now(),
+				voiceName: selectedVoice.name,
+				voiceId: selectedVoice.id
 			}
 		];
 		currentFollowUps = [];
@@ -150,7 +152,9 @@ export function createChatState(callbacks: ChatCallbacks) {
 					id: crypto.randomUUID(),
 					role: 'assistant',
 					content: "You've used your session allocation, which means you're either genuinely interested or stress-testing my limits. Either way, the best next step is talking to the real Josh. He's friendlier than me and has fewer token constraints.",
-					timestamp: Date.now()
+					timestamp: Date.now(),
+					voiceName: selectedVoice.name,
+					voiceId: selectedVoice.id
 				}
 			];
 
@@ -217,7 +221,9 @@ export function createChatState(callbacks: ChatCallbacks) {
 						content,
 						timestamp: Date.now(),
 						source,
-						metadata: generateMetadata(source, content.length, latency)
+						metadata: generateMetadata(source, content.length, latency),
+						voiceName: selectedVoice.name,
+						voiceId: selectedVoice.id
 					}
 				];
 			} else if (res.headers.get('X-Response-Source') === 'llm-stream' && res.body) {
@@ -237,7 +243,9 @@ export function createChatState(callbacks: ChatCallbacks) {
 								role: 'assistant',
 								content: chunk,
 								timestamp: Date.now(),
-								source: 'llm-stream'
+								source: 'llm-stream',
+								voiceName: selectedVoice.name,
+								voiceId: selectedVoice.id
 							}
 						];
 						isTyping = false;
@@ -261,7 +269,9 @@ export function createChatState(callbacks: ChatCallbacks) {
 							content: fallbackContent,
 							timestamp: Date.now(),
 							source: 'llm-unavailable',
-							metadata: generateMetadata('llm-unavailable', fallbackContent.length, latency)
+							metadata: generateMetadata('llm-unavailable', fallbackContent.length, latency),
+							voiceName: selectedVoice.name,
+							voiceId: selectedVoice.id
 						}
 					];
 				} else {
@@ -295,7 +305,9 @@ export function createChatState(callbacks: ChatCallbacks) {
 						content: data.response,
 						timestamp: Date.now(),
 						source,
-						metadata: generateMetadata(source, data.response.length, latency)
+						metadata: generateMetadata(source, data.response.length, latency),
+						voiceName: selectedVoice.name,
+						voiceId: selectedVoice.id
 					}
 				];
 			}
@@ -312,7 +324,9 @@ export function createChatState(callbacks: ChatCallbacks) {
 					content: errorContent,
 					timestamp: Date.now(),
 					source: 'error',
-					metadata: generateMetadata('error', errorContent.length, latency)
+					metadata: generateMetadata('error', errorContent.length, latency),
+					voiceName: selectedVoice.name,
+					voiceId: selectedVoice.id
 				}
 			];
 		}
@@ -322,7 +336,10 @@ export function createChatState(callbacks: ChatCallbacks) {
 
 	function handleVoiceChange(voice: typeof defaultVoice) {
 		selectedVoice = voice;
-		initChat();
+		// Pre-conversation: rewrite the greeting to match the new voice
+		if (messages.length <= 1) {
+			initChat();
+		}
 	}
 
 	// ---- Public interface ----

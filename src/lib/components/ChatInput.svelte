@@ -1,12 +1,15 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
+
 	interface Props {
 		inputValue: string;
 		isTyping: boolean;
 		disabled?: boolean;
 		onSend: () => void;
+		leftElement?: Snippet;
 	}
 
-	let { inputValue = $bindable(), isTyping, disabled = false, onSend }: Props = $props();
+	let { inputValue = $bindable(), isTyping, disabled = false, onSend, leftElement }: Props = $props();
 
 	let textareaEl: HTMLTextAreaElement | undefined = $state();
 
@@ -33,6 +36,9 @@
 <div class="sticky bottom-0 px-4 pt-2 pb-4 bg-gradient-to-t from-surface from-60% to-transparent chat-input-area">
 	<div class="max-w-2xl mx-auto">
 		<div class="glass rounded-2xl flex items-end gap-2 p-2">
+			{#if leftElement}
+				{@render leftElement()}
+			{/if}
 			<label for="chat-input" class="sr-only">Ask about Josh</label>
 			<textarea
 				id="chat-input"

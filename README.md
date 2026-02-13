@@ -21,6 +21,8 @@ Follow-up suggestions are extracted from LLM output to guide conversation contex
 | The Spokesperson | Corporate PR tone, buzzword-heavy |
 | The Hype Man | Unreasonably enthusiastic |
 
+Voice selection uses a two-phase UX: prominent voice cards on first load (before the conversation starts), collapsing to a compact sticky bar once the user sends their first message. Voices can be switched mid-conversation without resetting messages or session state.
+
 ## Prompt Injection Defense
 
 Multiple independent layers to reduce the attack surface for prompt injection and jailbreaking.
@@ -59,15 +61,17 @@ No database. All content is version-controlled TypeScript. Rate limiting and ses
 git clone https://github.com/hutfut/josh-bot.git
 cd josh-bot
 npm install
-npm run dev
+npm run dev        # offline mode: skips LLM and rate limiting
+npm run dev:live   # live mode: uses real LLM and rate limiter (requires API key)
 ```
 
 ### Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `ANTHROPIC_API_KEY` | Yes | Enables chat functionality |
+| `ANTHROPIC_API_KEY` | Yes (live) | Enables chat functionality |
 | `UPSTASH_REDIS_REST_URL` | No | Production rate limiting |
 | `UPSTASH_REDIS_REST_TOKEN` | No | Production rate limiting |
+| `SKIP_EXTERNAL` | No | Set to `true` to bypass LLM and rate limiting (set via `.env.offline`, loaded by `npm run dev`) |
 
 Rate limiting falls back to an in-memory implementation when Upstash credentials are not provided. Session storage is in-memory in all environments.

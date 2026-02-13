@@ -9,6 +9,8 @@
 - **`src/routes/`** – Pages and API. Chat UI is `chat/+page.svelte`; the only chat endpoint is `api/chat/+server.ts`.
 - **`src/lib/server/`** – Server-only: prompts, context builder, sanitize, sessions, ratelimit. Never import these from client code (SvelteKit will error).
 - **`src/lib/`** (non-server) – Shared types, components, and client-safe logic. Chat state and stream consumption live in `lib/chat/`.
+- **`src/lib/components/VoiceCards.svelte`** – Initial voice selection as a 2x2/4-col card grid (shown pre-conversation).
+- **`src/lib/components/VoiceBar.svelte`** – Compact sticky voice pill bar (shown during active conversation).
 - **`src/lib/data/`** – Static content: voice definitions, greetings, fallbacks, changelog. Add copy or new voices here; prompt text and personality live in `lib/server/prompts.ts`.
 
 ---
@@ -17,6 +19,7 @@
 
 - **Svelte 5:** Use runes (`$state`, `$derived`, `$effect`) everywhere. No legacy stores or lifecycle hooks for new code.
 - **Chat flow:** Client sends `{ message, voiceId, sessionId?, persona? }` to POST `/api/chat`. History is stored server-side; the client never sends conversation history. Responses stream back; follow-up pills are parsed from `[FOLLOWUPS]` blocks in the LLM output.
+- **Voice switching:** Voice can be switched mid-conversation without reset. The per-request `voiceId` is used for prompt generation, not the session's stored value. Each assistant message records the `voiceName` that generated it.
 - **Types:** Shared types in `$lib/types` (e.g. `Persona`, `ResponseSource`, `ChatMessage`, `ActionPill`). Use these instead of ad-hoc shapes.
 - **API responses:** Chat API returns `{ response: string, source: ResponseSource }` (and sometimes `followUps`). Error/rate-limit responses use the same shape with a human-readable `response` and appropriate `source`.
 

@@ -1,12 +1,12 @@
 <script lang="ts">
-	let { voiceName }: { voiceName: string } = $props();
+	import VoiceAvatar from './VoiceAvatar.svelte';
+
+	let { voiceName, voiceId = 'butler' }: { voiceName: string; voiceId?: string } = $props();
 </script>
 
 <div class="flex gap-3 animate-slide-up">
-	<div
-		class="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0 mt-0.5 select-none"
-	>
-		j
+	<div class="flex-shrink-0 mt-0.5 scale-75 origin-top-left">
+		<VoiceAvatar {voiceId} active={true} />
 	</div>
 	<div>
 		<p class="text-xs text-gray-500 mb-1.5 font-medium">{voiceName}</p>
